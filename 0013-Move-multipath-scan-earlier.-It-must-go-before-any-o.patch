@@ -1,0 +1,47 @@
+From 7e22ab089128e6085e8e88b34cb41cc45c4e3132 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Fri, 5 Feb 2010 14:21:48 -0500
+Subject: [PATCH 13/23] Move multipath scan earlier.  It must go before any other dm rules.
+
+multipath scan needs to go before lvm, or else lvm may grab the device
+multipath would activate, and multipath will be unable to claim it.
+---
+ modules.d/90multipath/14-multipath-scan.rules |    9 ---------
+ modules.d/90multipath/9-multipath-scan.rules  |    9 +++++++++
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+ delete mode 100644 modules.d/90multipath/14-multipath-scan.rules
+ create mode 100644 modules.d/90multipath/9-multipath-scan.rules
+
+diff --git a/modules.d/90multipath/14-multipath-scan.rules b/modules.d/90multipath/14-multipath-scan.rules
+deleted file mode 100644
+index 99c2b7c..0000000
+--- a/modules.d/90multipath/14-multipath-scan.rules
++++ /dev/null
+@@ -1,9 +0,0 @@
+-# scan for multipath devices
+-SUBSYSTEM!="block", GOTO="end_mpath_scan"
+-KERNEL!="sd*", GOTO="end_mpath_scan"
+-PROGRAM=="/bin/sh -c 'for i in $sys/$devpath/holders/dm-[0-9]*; do [ -e $$i ] && exit 0; done; exit 1;' ", GOTO="end_mpath_scan"
+-RUN+="/sbin/modprobe dm-multipath"
+-RUN+="/bin/echo 'queuing multipath scan'"
+-RUN+="/sbin/initqueue --settled --onetime --unique --name mpscan /sbin/multipath-scan"
+-RUN+="/bin/sh -c '>/tmp/.multipath-scan-%k;'"
+-LABEL="end_mpath_scan"
+diff --git a/modules.d/90multipath/9-multipath-scan.rules b/modules.d/90multipath/9-multipath-scan.rules
+new file mode 100644
+index 0000000..99c2b7c
+--- /dev/null
++++ b/modules.d/90multipath/9-multipath-scan.rules
+@@ -0,0 +1,9 @@
++# scan for multipath devices
++SUBSYSTEM!="block", GOTO="end_mpath_scan"
++KERNEL!="sd*", GOTO="end_mpath_scan"
++PROGRAM=="/bin/sh -c 'for i in $sys/$devpath/holders/dm-[0-9]*; do [ -e $$i ] && exit 0; done; exit 1;' ", GOTO="end_mpath_scan"
++RUN+="/sbin/modprobe dm-multipath"
++RUN+="/bin/echo 'queuing multipath scan'"
++RUN+="/sbin/initqueue --settled --onetime --unique --name mpscan /sbin/multipath-scan"
++RUN+="/bin/sh -c '>/tmp/.multipath-scan-%k;'"
++LABEL="end_mpath_scan"
+-- 
+1.6.6
+

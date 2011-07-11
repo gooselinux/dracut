@@ -1,0 +1,56 @@
+From 3b0f71921db4a113bae8e193d8fbaaf4c3035b8b Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 17 Mar 2010 11:14:45 +0100
+Subject: [PATCH 56/64] kernel-modules/installkernel: force install some modules even in
+ hostonly mode
+
+---
+ modules.d/90kernel-modules/installkernel |   17 +++++++----------
+ 1 files changed, 7 insertions(+), 10 deletions(-)
+
+diff --git a/modules.d/90kernel-modules/installkernel b/modules.d/90kernel-modules/installkernel
+index 0fbafe7..3416e7c 100755
+--- a/modules.d/90kernel-modules/installkernel
++++ b/modules.d/90kernel-modules/installkernel
+@@ -5,11 +5,11 @@ if [[ -z $drivers ]]; then
+ 
+ 	 nm -uPA "$1" | egrep -q "$blockfuncs"
+     }
+-    instmods pcmcia sd_mod scsi_dh scsi_dh_rdac scsi_dh_emc
+-    instmods firewire-ohci
++    hostonly='' instmods pcmcia sd_mod scsi_dh scsi_dh_rdac scsi_dh_emc
++    hostonly='' instmods firewire-ohci
+ 
+     # install keyboard support
+-    instmods atkbd i8042 usbhid hid-apple ehci-hcd ohci-hcd uhci-hcd
++    hostonly='' instmods atkbd i8042 usbhid hid-apple ehci-hcd ohci-hcd uhci-hcd
+ 
+     instmods "=drivers/pcmcia" =ide "=drivers/usb/storage"
+     instmods $(filter_kernel_modules block_module_test) 
+@@ -21,19 +21,16 @@ if [[ -z $drivers ]]; then
+ 	    instmods $filesystems
+ 	fi
+     else
+-	instmods $(get_fs_type "/dev/block/$(find_root_block_device)")
++	hostonly='' instmods $(get_fs_type "/dev/block/$(find_root_block_device)")
+     fi
+     # hardcoded list of exceptions
+     rm -fr ${initdir}/lib/modules/*/kernel/fs/ocfs2
+ else
+-  instmods $drivers $filesystems
++  hostonly='' instmods $drivers $filesystems
+ fi
+ 
+-[[ $add_drivers ]] && instmods $add_drivers
++[[ $add_drivers ]] && hostonly='' instmods $add_drivers
+ 
+ # force install of scsi_wait_scan
+-old_hostonly=$hostonly
+-hostonly=''
+-instmods scsi_wait_scan
+-hostonly=$old_hostonly
++hostonly='' instmods scsi_wait_scan
+ 
+-- 
+1.6.6
+

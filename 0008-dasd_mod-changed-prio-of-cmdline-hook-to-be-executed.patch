@@ -1,0 +1,22 @@
+From c88b21941053937087e6cd308ee14f85fd9ad26c Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 3 Feb 2010 10:17:58 +0100
+Subject: [PATCH 08/23] dasd_mod: changed prio of cmdline hook to be executed after dasd
+
+---
+ modules.d/95dasd_mod/install |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/95dasd_mod/install b/modules.d/95dasd_mod/install
+index 628614a..5cfcf25 100755
+--- a/modules.d/95dasd_mod/install
++++ b/modules.d/95dasd_mod/install
+@@ -1,4 +1,4 @@
+ #!/bin/bash
+-inst_hook cmdline 30 "$moddir/parse-dasd-mod.sh"
++inst_hook cmdline 31 "$moddir/parse-dasd-mod.sh"
+ dracut_install dasd_cio_free grep sed
+ 
+-- 
+1.6.6
+

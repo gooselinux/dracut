@@ -1,0 +1,23 @@
+From edb511860c28d4000039df8f6391bd35c033692e Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 12 Feb 2010 11:00:21 +0100
+Subject: [PATCH 16/23] Fixed: Move multipath scan earlier.  It must go before any other dm rules.
+
+Also changed the filename in the install file.
+---
+ modules.d/90multipath/install |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/90multipath/install b/modules.d/90multipath/install
+index 37c2842..432f4f8 100755
+--- a/modules.d/90multipath/install
++++ b/modules.d/90multipath/install
+@@ -29,4 +29,4 @@ inst_hook pre-pivot   02 "$moddir/multipathd-stop.sh"
+ inst_rules 40-multipath.rules
+ 
+ inst "$moddir/multipath-scan.sh" /sbin/multipath-scan
+-inst_rules "$moddir/14-multipath-scan.rules"
++inst_rules "$moddir/9-multipath-scan.rules"
+-- 
+1.6.6
+

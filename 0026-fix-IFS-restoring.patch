@@ -1,0 +1,88 @@
+From 9232cab47014bd4fb0586ba03b58b9cebc7b5ae1 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 18 Feb 2010 09:46:19 +0100
+Subject: [PATCH 26/26] fix IFS restoring
+
+---
+ modules.d/95iscsi/iscsiroot            |    2 +-
+ modules.d/95nfs/nfsroot                |    4 ++--
+ modules.d/95rootfs-block/mount-root.sh |    4 ++--
+ modules.d/99base/dracut-lib.sh         |    4 +---
+ 4 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/modules.d/95iscsi/iscsiroot b/modules.d/95iscsi/iscsiroot
+index 308faa4..6d0dde6 100755
+--- a/modules.d/95iscsi/iscsiroot
++++ b/modules.d/95iscsi/iscsiroot
+@@ -112,7 +112,7 @@ iscsi_target_port=$1; shift
+ iscsi_lun=$1; shift
+ IFS=:
+ iscsi_target_name=$*
+-IFS=$OLDIFS
++IFS="$OLDIFS"
+ # XXX is this needed?
+ getarg ro && iscsirw=ro
+ getarg rw && iscsirw=rw
+diff --git a/modules.d/95nfs/nfsroot b/modules.d/95nfs/nfsroot
+index fb7d5f4..6ae4e0b 100755
+--- a/modules.d/95nfs/nfsroot
++++ b/modules.d/95nfs/nfsroot
+@@ -63,14 +63,14 @@ if [ "${path#*%s}" != "$path" ]; then
+ fi
+ 
+ # Look through the options and remove rw/locking options
+-OLDIFS=$IFS
++OLDIFS="$IFS"
+ IFS=,
+ for f in $options ; do
+     [ "$f" = "ro" -o "$f" = "rw" ] && nfsrw=$f && continue
+     [ "$f" = "lock" -o "$f" = "nolock" ] && nfslock=$f && continue
+     flags=${flags:+$flags,}$f
+ done
+-IFS=$OLDIFS
++IFS="$OLDIFS"
+ options=$flags
+ 
+ # Override rw/ro if set on cmdline
+diff --git a/modules.d/95rootfs-block/mount-root.sh b/modules.d/95rootfs-block/mount-root.sh
+index 3c18406..2b4c785 100755
+--- a/modules.d/95rootfs-block/mount-root.sh
++++ b/modules.d/95rootfs-block/mount-root.sh
+@@ -5,10 +5,10 @@
+ filter_rootopts() {
+     rootopts=$1
+     # strip ro and rw options
+-    local OLDIFS=$IFS
++    local OLDIFS="$IFS"
+     IFS=,
+     set -- $rootopts
+-    IFS=$OLDIFS
++    IFS="$OLDIFS"
+     local v
+     while [ $# -gt 0 ]; do
+         case $1 in
+diff --git a/modules.d/99base/dracut-lib.sh b/modules.d/99base/dracut-lib.sh
+index 100219e..de23566 100644
+--- a/modules.d/99base/dracut-lib.sh
++++ b/modules.d/99base/dracut-lib.sh
+@@ -48,7 +48,7 @@ setdebug() {
+     if [ -z "$RDDEBUG" ]; then
+         if [ -e /proc/cmdline ]; then
+             RDDEBUG=no
+-           if getarg rdinitdebug; then
++            if getarg rdinitdebug; then
+                 RDDEBUG=yes 
+             fi
+         fi
+@@ -186,8 +186,6 @@ nfsroot_to_var() {
+     local arg="$@:"
+     nfs="${arg%%:*}"
+     arg="${arg##$nfs:}"
+-    # check for server
+-    local OLDIFS="$IFS"
+ 
+     # check if we have a server
+     if strstr "$arg" ':/*' ; then
+-- 
+1.6.6
+

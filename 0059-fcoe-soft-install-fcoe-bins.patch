@@ -1,0 +1,27 @@
+From 16b046d5da002fb1ebe13d5166a94c3b95dba19f Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 19 Mar 2010 16:49:41 +0100
+Subject: [PATCH 59/65] fcoe: soft install fcoe bins
+
+---
+ modules.d/95fcoe/install |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/modules.d/95fcoe/install b/modules.d/95fcoe/install
+index 71b3bd1..69f6bf5 100755
+--- a/modules.d/95fcoe/install
++++ b/modules.d/95fcoe/install
+@@ -1,7 +1,8 @@
+ #!/bin/bash
+ 
+-dracut_install ip dcbtool fipvlan
+-
++dracut_install ip 
++inst dcbtool 
++inst fipvlan
+ inst lldpad
+ mkdir -p "$initdir/var/lib/lldpad"
+ 
+-- 
+1.6.6
+

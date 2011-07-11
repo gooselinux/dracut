@@ -1,0 +1,78 @@
+From 11ce36d78efd20ac8c41f5a12ff6263cc74803b3 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 17 Feb 2010 20:18:10 +0100
+Subject: [PATCH 24/24] mount-root: do not pollute init arguments
+
+and do not remount if no new rootopts set in /etc/fstab
+---
+ modules.d/95rootfs-block/mount-root.sh |   44 ++++++++++++++++---------------
+ 1 files changed, 23 insertions(+), 21 deletions(-)
+
+diff --git a/modules.d/95rootfs-block/mount-root.sh b/modules.d/95rootfs-block/mount-root.sh
+index 62290ab..3c18406 100755
+--- a/modules.d/95rootfs-block/mount-root.sh
++++ b/modules.d/95rootfs-block/mount-root.sh
+@@ -2,9 +2,29 @@
+ 
+ . /lib/dracut-lib.sh
+ 
++filter_rootopts() {
++    rootopts=$1
++    # strip ro and rw options
++    local OLDIFS=$IFS
++    IFS=,
++    set -- $rootopts
++    IFS=$OLDIFS
++    local v
++    while [ $# -gt 0 ]; do
++        case $1 in
++            rw|ro);;
++            *)
++                v="$v,${1}";;
++        esac
++        shift
++    done
++    rootopts=${v#,}
++    echo $rootopts
++}
++
+ if [ -n "$root" -a -z "${root%%block:*}" ]; then
+     mount -t ${fstype:-auto} -o "$rflags" "${root#block:}" "$NEWROOT" \
+-        && ROOTFS_MOUNTED=yes
++        && ROOTFS_MOUNTED=yes 
+ 
+     if ! getarg rd_NO_FSTAB \
+       && ! getarg rootflags \
+@@ -23,27 +43,9 @@ if [ -n "$root" -a -z "${root%%block:*}" ]; then
+             fi
+ 	done < "$NEWROOT/etc/fstab"
+ 
++	rootopts=$(filter_rootopts $rootopts)
+ 
+-	# strip ro and rw options
+-	{
+-	    local OLDIFS=$IFS
+-	    IFS=,	
+-	    set -- $rootopts
+-	    IFS=$OLDIFS
+-	    local v
+-	    while [ $# -gt 0 ]; do
+-		case $1 in 
+-		    rw|ro);;
+-		    *)
+-			v="$v,${1}";;
+-		esac
+-		shift
+-	    done
+-	    rootopts=${v#,}
+-	}
+-
+-
+-	if [ "$rootopts" != "defaults" ]; then
++	if [ -n "$rootopts" -a "$rootopts" != "defaults" ]; then
+             umount $NEWROOT
+             info "Remounting ${root#block:} with -o $rootopts,$rflags"
+             mount -t "$rootfs" -o "$rflags","$rootopts" \
+-- 
+1.6.6
+

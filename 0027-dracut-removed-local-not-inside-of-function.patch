@@ -1,0 +1,24 @@
+From 26999d6ddbad3d46641e9101cf656ebca3a784a9 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 18 Feb 2010 17:28:41 +0100
+Subject: [PATCH 27/64] dracut: removed "local" not inside of function
+
+---
+ dracut |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/dracut b/dracut
+index 4f9b5e3..47908c4 100755
+--- a/dracut
++++ b/dracut
+@@ -130,7 +130,6 @@ fi
+ 
+ # source our config dir
+ if [ "$confdir" ] && [  -d "$confdir" ]; then
+-    local f
+     for f in "$confdir"/*.conf; do 
+ 	[ -e "$f" ] && . "$f"
+     done
+-- 
+1.6.6
+

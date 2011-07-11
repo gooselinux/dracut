@@ -1,0 +1,38 @@
+From 185468f57d1d8dbb6b959d9e7f511cf4c8b92c12 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 25 Jun 2010 11:42:51 +0200
+Subject: [PATCH 160/161] dmsquash, resume: do not name the /dev/.udev/rules like the /etc ones
+
+---
+ .../90dmsquash-live/dmsquash-live-genrules.sh      |    2 +-
+ modules.d/95resume/resume-genrules.sh              |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/modules.d/90dmsquash-live/dmsquash-live-genrules.sh b/modules.d/90dmsquash-live/dmsquash-live-genrules.sh
+index 1057c8c..f3ea0a3 100755
+--- a/modules.d/90dmsquash-live/dmsquash-live-genrules.sh
++++ b/modules.d/90dmsquash-live/dmsquash-live-genrules.sh
+@@ -11,6 +11,6 @@ if [ "${root%%:*}" = "live" ]; then
+     	${root#live:/dev/} 
+     printf 'SYMLINK=="%s", RUN+="/sbin/initqueue --settled --onetime --unique /sbin/dmsquash-live-root $env{DEVNAME}"\n' \
+ 	${root#live:/dev/} 
+-    } >> /etc/udev/rules.d/99-live-mount.rules
++    } >> /etc/udev/rules.d/99-live-squash.rules
+     echo '[ -e /dev/root ]' > /initqueue-finished/dmsquash.sh
+ fi
+diff --git a/modules.d/95resume/resume-genrules.sh b/modules.d/95resume/resume-genrules.sh
+index 59e1024..dfe0e2d 100755
+--- a/modules.d/95resume/resume-genrules.sh
++++ b/modules.d/95resume/resume-genrules.sh
+@@ -5,7 +5,7 @@ if [ -n "$resume" ]; then
+ 		${resume#/dev/};
+     printf "SYMLINK==\"%s\", ACTION==\"add|change\", SYMLINK+=\"/dev/resume\"\n" \
+ 		${resume#/dev/};
+-    } >> /dev/.udev/rules.d/99-resume.rules
++    } >> /dev/.udev/rules.d/99-resume-link.rules
+ 
+     {
+     printf "KERNEL==\"%s\", ACTION==\"add|change\", ENV{ID_FS_TYPE}==\"suspend|swsuspend|swsupend\", RUN+=\"/bin/sh -c 'echo %%M:%%m > /sys/power/resume'\"\n" \
+-- 
+1.7.0.1
+

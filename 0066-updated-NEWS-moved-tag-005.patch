@@ -1,0 +1,31 @@
+From e8767636551ece83b3db6a207ef6658e2628198d Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 19 Mar 2010 17:35:47 +0100
+Subject: [PATCH 066/112] updated NEWS, moved tag 005
+
+---
+ NEWS |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index 4a5f48e..5f8b18c 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,3 +1,14 @@
++dracut-005
++==========
++- dcb support to dracut's FCoE support 
++- add readonly overlay support for dmsquash
++- add keyboard kernel modules
++- dracut.conf: added add_dracutmodules
++- add /etc/dracut.conf.d
++- add preliminary IPv6 support
++- bugfixes
++
++
+ dracut-004
+ ==========
+ - dracut-lib: read multiple lines from $init/etc/cmdline
+-- 
+1.7.0.1
+

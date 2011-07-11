@@ -1,0 +1,25 @@
+From a8ca68a91eb8180f86123ad0bb5cebff9546e79e Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 7 May 2010 11:02:31 +0200
+Subject: [PATCH 117/133] plymouth/plymouth-populate-initrd: get rid of awk
+
+---
+ modules.d/50plymouth/plymouth-populate-initrd |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/50plymouth/plymouth-populate-initrd b/modules.d/50plymouth/plymouth-populate-initrd
+index b35a46f..effb0f9 100755
+--- a/modules.d/50plymouth/plymouth-populate-initrd
++++ b/modules.d/50plymouth/plymouth-populate-initrd
+@@ -30,7 +30,7 @@ if [[ $hostonly ]]; then
+     if [ -L /usr/share/plymouth/themes/default.plymouth ]; then
+ 	inst /usr/share/plymouth/themes/default.plymouth
+         # Install plugin for this theme
+-	PLYMOUTH_PLUGIN=$(grep "^ModuleName=" /usr/share/plymouth/themes/default.plymouth |awk -F= {'print $2'})
++	PLYMOUTH_PLUGIN=$(grep "^ModuleName=" /usr/share/plymouth/themes/default.plymouth | while read a b c; do echo $b; done;)
+ 	inst ${LIBDIR}/plymouth/${PLYMOUTH_PLUGIN}.so
+     fi
+ else
+-- 
+1.7.0.1
+

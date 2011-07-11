@@ -1,0 +1,87 @@
+From 2c2c45800c0f29bb21d96472dc8b126adc29030e Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 12 Feb 2010 11:12:37 +0100
+Subject: [PATCH 17/23] add /etc/dracut.conf.d
+
+---
+ Makefile    |    1 +
+ dracut      |   14 ++++++++++++++
+ dracut.8    |    5 +++++
+ dracut.spec |    1 +
+ 4 files changed, 21 insertions(+), 0 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 4270dea..41a4406 100644
+--- a/Makefile
++++ b/Makefile
+@@ -37,6 +37,7 @@ ifeq (1,${WITH_SWITCH_ROOT})
+ 	install -m 0755 modules.d/99base/switch_root $(DESTDIR)$(sbindir)/switch_root
+ endif
+ 	install -m 0644 dracut.conf $(DESTDIR)$(sysconfdir)/dracut.conf
++	mkdir -p $(DESTDIR)$(sysconfdir)/dracut.conf.d
+ 	install -m 0755 dracut-functions $(DESTDIR)$(pkglibdir)/dracut-functions
+ 	cp -arx modules.d $(DESTDIR)$(pkglibdir)
+ 	install -m 0644 dracut.8 $(DESTDIR)$(mandir)/man8
+diff --git a/dracut b/dracut
+index b438173..4f9b5e3 100755
+--- a/dracut
++++ b/dracut
+@@ -94,6 +94,7 @@ while (($# > 0)); do
+ 	--debug) debug="yes";;
+ 	-v|--verbose) beverbose="yes";;
+ 	-c|--conf) conffile="$2"; shift;;
++	--confdir) confdir="$2"; shift;;
+ 	-l|--local) allowlocal="yes" ;;
+ 	-H|--hostonly) hostonly_l="yes" ;;
+ 	-i|--include) include_src="$2"; include_target="$3"; shift 2;;
+@@ -122,6 +123,19 @@ if [[ ! -f $conffile ]]; then
+     [[ $allowlocal ]] && conffile="$dracutbasedir/dracut.conf"
+ fi
+ 
++if [[ ! -d $confdir ]]; then
++    [[ $allowlocal ]] || confdir="/etc/dracut.conf.d"
++    [[ $allowlocal ]] && confdir="$dracutbasedir/dracut.conf.d"
++fi
++
++# source our config dir
++if [ "$confdir" ] && [  -d "$confdir" ]; then
++    local f
++    for f in "$confdir"/*.conf; do 
++	[ -e "$f" ] && . "$f"
++    done
++fi
++
+ # source our config file
+ [[ -f $conffile ]] && . "$conffile"
+ 
+diff --git a/dracut.8 b/dracut.8
+index d82e437..3ec9c4f 100644
+--- a/dracut.8
++++ b/dracut.8
+@@ -75,6 +75,11 @@ specify configuration file to use.
+ Default: 
+ .IR /etc/dracut.conf
+ .TP
++.BR \-\-confdir " \fIDIR\fR"
++specify configuration directory to use.
++Default: 
++.IR /etc/dracut.conf.d
++.TP
+ .BR \-l ", " \-\-local
+ local mode. Use modules from the current working
+ directory instead of the system-wide installed in
+diff --git a/dracut.spec b/dracut.spec
+index 682c57a..428dd16 100644
+--- a/dracut.spec
++++ b/dracut.spec
+@@ -180,6 +180,7 @@ rm -rf $RPM_BUILD_ROOT
+ %dir %{_datadir}/dracut
+ %{_datadir}/dracut/dracut-functions
+ %config(noreplace) /etc/dracut.conf
++%dir /etc/dracut.conf.d
+ %{_mandir}/man8/dracut.8*
+ %{_mandir}/man5/dracut.conf.5*
+ %{_datadir}/dracut/modules.d/00dash
+-- 
+1.6.6
+

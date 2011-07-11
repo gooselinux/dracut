@@ -1,0 +1,181 @@
+From 8a080127649f1c33b6445302178567cf8a775c14 Mon Sep 17 00:00:00 2001
+From: Philippe Seewer <philippe.seewer@bfh.ch>
+Date: Fri, 5 Mar 2010 11:42:04 +0100
+Subject: [PATCH 49/64] test: use ldconfig processing for roots as well
+
+---
+ test/TEST-10-RAID/test.sh         |    2 ++
+ test/TEST-11-LVM/test.sh          |    2 ++
+ test/TEST-12-RAID-DEG/test.sh     |    2 ++
+ test/TEST-13-ENC-RAID-LVM/test.sh |    2 ++
+ test/TEST-14-IMSM/test.sh         |    2 ++
+ test/TEST-20-NFS/test.sh          |    6 ++++--
+ test/TEST-30-ISCSI/test.sh        |    6 ++++--
+ test/TEST-40-NBD/test.sh          |    6 ++++--
+ test/TEST-50-MULTINIC/test.sh     |    6 ++++--
+ 9 files changed, 26 insertions(+), 8 deletions(-)
+
+diff --git a/test/TEST-10-RAID/test.sh b/test/TEST-10-RAID/test.sh
+index 8bc7b44..875f454 100755
+--- a/test/TEST-10-RAID/test.sh
++++ b/test/TEST-10-RAID/test.sh
+@@ -31,6 +31,8 @@ test_setup() {
+ 	inst ./test-init /sbin/init
+ 	find_binary plymouth >/dev/null && dracut_install plymouth
+ 	(cd "$initdir"; mkdir -p dev sys proc etc var/run tmp )
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+  
+     # second, install the files needed to make the root filesystem
+diff --git a/test/TEST-11-LVM/test.sh b/test/TEST-11-LVM/test.sh
+index ff6d751..798b24f 100755
+--- a/test/TEST-11-LVM/test.sh
++++ b/test/TEST-11-LVM/test.sh
+@@ -31,6 +31,8 @@ test_setup() {
+ 	inst ./test-init /sbin/init
+ 	find_binary plymouth >/dev/null && dracut_install plymouth
+ 	(cd "$initdir"; mkdir -p dev sys proc etc var/run tmp )
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+  
+     # second, install the files needed to make the root filesystem
+diff --git a/test/TEST-12-RAID-DEG/test.sh b/test/TEST-12-RAID-DEG/test.sh
+index 2d3d3c0..fb39551 100755
+--- a/test/TEST-12-RAID-DEG/test.sh
++++ b/test/TEST-12-RAID-DEG/test.sh
+@@ -66,6 +66,8 @@ test_setup() {
+ 	inst ./test-init /sbin/init
+ 	find_binary plymouth >/dev/null && dracut_install plymouth
+ 	(cd "$initdir"; mkdir -p dev sys proc etc var/run tmp )
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+  
+     # second, install the files needed to make the root filesystem
+diff --git a/test/TEST-13-ENC-RAID-LVM/test.sh b/test/TEST-13-ENC-RAID-LVM/test.sh
+index 2071a08..436e429 100755
+--- a/test/TEST-13-ENC-RAID-LVM/test.sh
++++ b/test/TEST-13-ENC-RAID-LVM/test.sh
+@@ -31,6 +31,8 @@ test_setup() {
+ 	inst ./test-init /sbin/init
+ 	find_binary plymouth >/dev/null && dracut_install plymouth
+ 	(cd "$initdir"; mkdir -p dev sys proc etc var/run tmp )
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+  
+     # second, install the files needed to make the root filesystem
+diff --git a/test/TEST-14-IMSM/test.sh b/test/TEST-14-IMSM/test.sh
+index 9215899..efddb9a 100755
+--- a/test/TEST-14-IMSM/test.sh
++++ b/test/TEST-14-IMSM/test.sh
+@@ -53,6 +53,8 @@ test_setup() {
+ 	inst ./test-init /sbin/init
+ 	find_binary plymouth >/dev/null && dracut_install plymouth
+ 	(cd "$initdir"; mkdir -p dev sys proc etc var/run tmp )
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+  
+     # second, install the files needed to make the root filesystem
+diff --git a/test/TEST-20-NFS/test.sh b/test/TEST-20-NFS/test.sh
+index c10b0e1..380fe01 100755
+--- a/test/TEST-20-NFS/test.sh
++++ b/test/TEST-20-NFS/test.sh
+@@ -235,7 +235,8 @@ test_setup() {
+ 	done
+ 
+ 	/sbin/depmod -a -b "$initdir" $kernel
+-	ldconfig -n -r "$initdir" /lib* /usr/lib*
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+ 
+     # Make client root inside server root
+@@ -260,7 +261,8 @@ test_setup() {
+ 	    inst_library $i
+ 	done
+ 
+-	ldconfig -n -r "$initdir" /lib* /usr/lib*
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+ 
+     mkdir -p mnt/nfs/nfs3-5
+diff --git a/test/TEST-30-ISCSI/test.sh b/test/TEST-30-ISCSI/test.sh
+index 008aa3d..bde1e37 100755
+--- a/test/TEST-30-ISCSI/test.sh
++++ b/test/TEST-30-ISCSI/test.sh
+@@ -75,7 +75,8 @@ test_setup() {
+ 		cp ping grep
+ 	inst ./client-init /sbin/init
+ 	(cd "$initdir"; mkdir -p dev sys proc etc var/run tmp )
+-	ldconfig -n -r "$initdir" /lib* /usr/lib*
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+  
+     # second, install the files needed to make the root filesystem
+@@ -154,7 +155,8 @@ test_setup() {
+ 	inst /etc/group /etc/group
+ 
+ 	/sbin/depmod -a -b "$initdir" $kernel
+-	ldconfig -n -r "$initdir" /lib* /usr/lib*
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+ 
+     sudo umount mnt
+diff --git a/test/TEST-40-NBD/test.sh b/test/TEST-40-NBD/test.sh
+index c57fd3f..58d93f3 100755
+--- a/test/TEST-40-NBD/test.sh
++++ b/test/TEST-40-NBD/test.sh
+@@ -237,7 +237,8 @@ make_client_root() {
+ 	    inst_library $i
+ 	done
+ 
+-	ldconfig -n -r "$initdir" /lib* /usr/lib*
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+ 
+     sudo umount mnt
+@@ -273,7 +274,8 @@ make_server_root() {
+ 	    inst_library $i
+ 	done
+ 
+-	ldconfig -n -r "$initdir" /lib* /usr/lib*
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+     )
+ 
+     sudo umount mnt
+diff --git a/test/TEST-50-MULTINIC/test.sh b/test/TEST-50-MULTINIC/test.sh
+index fca9947..5d714f2 100755
+--- a/test/TEST-50-MULTINIC/test.sh
++++ b/test/TEST-50-MULTINIC/test.sh
+@@ -160,7 +160,8 @@ test_setup() {
+  	done
+ 
+  	/sbin/depmod -a -b "$initdir" $kernel
+- 	ldconfig -n -r "$initdir" /lib* /usr/lib*
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+      )
+ 
+     # Make client root inside server root
+@@ -185,7 +186,8 @@ test_setup() {
+  	    inst_library $i
+  	done
+ 
+- 	ldconfig -n -r "$initdir" /lib* /usr/lib*
++	cp -a /etc/ld.so.conf* $initdir/etc
++	sudo ldconfig -r "$initdir"
+      )
+ 
+      sudo umount mnt
+-- 
+1.6.6
+

@@ -1,0 +1,34 @@
+From 91bb250aedfbdac23b760940cd7459327c2be349 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 9 Jul 2010 11:18:31 +0200
+Subject: [PATCH 171/173] dmsquash-live: do not umount /dev/.initramfs/live for cdrom_id to work
+
+---
+ modules.d/90dmsquash-live/dmsquash-live-root |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+
+diff --git a/modules.d/90dmsquash-live/dmsquash-live-root b/modules.d/90dmsquash-live/dmsquash-live-root
+index dc7c737..1b7fe19 100755
+--- a/modules.d/90dmsquash-live/dmsquash-live-root
++++ b/modules.d/90dmsquash-live/dmsquash-live-root
+@@ -130,7 +130,6 @@ fi
+ if [ -n "$EXT3FS" ] ; then
+     BASE_LOOPDEV=$( losetup -f )
+     losetup -r $BASE_LOOPDEV $EXT3FS
+-    umount -l /dev/.initramfs/live
+ 
+     do_live_from_base_loop
+ fi
+@@ -160,9 +159,6 @@ if [ -e "$SQUASHED" ] ; then
+     losetup -r $BASE_LOOPDEV /squashfs/LiveOS/ext3fs.img
+ 
+     umount -l /squashfs
+-    if [ -z "$live_ram" ] ; then
+-        umount -l /dev/.initramfs/live
+-    fi
+ 
+     do_live_from_base_loop
+ fi
+-- 
+1.7.0.1
+

@@ -1,0 +1,25 @@
+From c198a4bc8cef42f865aa6e9973ec068dc7532e82 Mon Sep 17 00:00:00 2001
+From: Alexander Todorov <atodorov@redhat.com>
+Date: Thu, 6 May 2010 16:58:51 +0200
+Subject: [PATCH 113/114] dracut.8: fix rd_LVM_LV description
+
+---
+ dracut.8 |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/dracut.8 b/dracut.8
+index ca27728..404c2a1 100644
+--- a/dracut.8
++++ b/dracut.8
+@@ -203,7 +203,7 @@ only activate the volume groups with the given name
+ rd_LVM_VG can be specified multiple times on the kernel command line.
+ .TP
+ .BR rd_LVM_LV= "<logical volume name>"
+-only activate the volume groups with the given name
++only activate the logical volumes with the given name
+ rd_LVM_LV can be specified multiple times on the kernel command line.
+ .TP
+ .BR rd_NO_LVMCONF
+-- 
+1.7.0.1
+

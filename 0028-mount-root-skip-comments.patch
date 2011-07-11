@@ -1,0 +1,26 @@
+From d793fc2e8b873f2b5471afe397f81c533bdc3f0f Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 18 Feb 2010 17:46:01 +0100
+Subject: [PATCH 28/64] mount-root: skip comments
+
+---
+ modules.d/95rootfs-block/mount-root.sh |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/modules.d/95rootfs-block/mount-root.sh b/modules.d/95rootfs-block/mount-root.sh
+index 2b4c785..0ac156d 100755
+--- a/modules.d/95rootfs-block/mount-root.sh
++++ b/modules.d/95rootfs-block/mount-root.sh
+@@ -36,6 +36,9 @@ if [ -n "$root" -a -z "${root%%block:*}" ]; then
+ 	rootfs="auto"
+ 	rootopts="defaults"
+ 	while read dev mp fs opts rest; do 
++            # skip comments
++            [ "${dev%%#*}" != "$dev" ] && continue
++            
+             if [ "$mp" = "/" ]; then
+ 		rootfs=$fs
+ 		rootopts=$opts
+-- 
+1.6.6
+

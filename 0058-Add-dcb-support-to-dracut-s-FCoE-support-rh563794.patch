@@ -1,0 +1,82 @@
+From 37b14e7295d7d6978a8893a8947557e352f27b8f Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Mon, 15 Mar 2010 11:21:29 +0100
+Subject: [PATCH 58/64] Add dcb support to dracut's FCoE support (rh563794)
+
+Note that there are still some patches queued upstream for fcoe-utils to
+enable it to work with the new lldpad and to add support to fipvlan to
+bring up FCoE connections without requiring fcoemon to run.
+
+The invocations of the various tools as in this patch should be final though,
+see the discussion in:
+http://bugzilla.redhat.com/show_bug.cgi?id=563794
+
+This is the second revision of this patch, which no longer adds /etc/fcoe
+to the initrd as that is not needed.
+---
+ modules.d/95fcoe/fcoe-up       |   14 +++++++++++++-
+ modules.d/95fcoe/install       |    5 ++++-
+ modules.d/95fcoe/parse-fcoe.sh |    3 +--
+ 3 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/modules.d/95fcoe/fcoe-up b/modules.d/95fcoe/fcoe-up
+index 8a70a62..bd6294a 100755
+--- a/modules.d/95fcoe/fcoe-up
++++ b/modules.d/95fcoe/fcoe-up
+@@ -6,6 +6,8 @@
+ # Note currently only nodcb is supported, the dcb option is reserved for
+ # future use.
+ 
++PATH=$PATH:/sbin:/usr/sbin
++
+ # Huh? Missing arguments ??
+ [ -z "$1" -o -z "$2" ] && exit 1
+ 
+@@ -13,4 +15,14 @@ netif=$1
+ dcb=$2
+ 
+ /sbin/ip link set "$netif" up
+-echo -n "$netif" > /sys/module/fcoe/parameters/create
++if [ "$dcb" = "dcb" ]; then
++    # Note lldpad will stay running after switchroot, the system initscripts
++    # are to kill it and start a new lldpad to take over. Data is transfered
++    # between the 2 using a shm segment
++    lldpad -d
++    dcbtool sc "$netif" dcb on
++    dcbtool sc "$netif" app:fcoe e:1 a:1 w:1
++    fipvlan "$netif" -c -s
++else
++    echo -n "$netif" > /sys/module/fcoe/parameters/create
++fi
+diff --git a/modules.d/95fcoe/install b/modules.d/95fcoe/install
+index 0bd9ed4..71b3bd1 100755
+--- a/modules.d/95fcoe/install
++++ b/modules.d/95fcoe/install
+@@ -1,6 +1,9 @@
+ #!/bin/bash
+ 
+-dracut_install ip
++dracut_install ip dcbtool fipvlan
++
++inst lldpad
++mkdir -p "$initdir/var/lib/lldpad"
+ 
+ inst "$moddir/fcoe-up" "/sbin/fcoe-up"
+ inst_hook pre-udev 60 "$moddir/fcoe-genrules.sh"
+diff --git a/modules.d/95fcoe/parse-fcoe.sh b/modules.d/95fcoe/parse-fcoe.sh
+index b35680f..26a5a1a 100755
+--- a/modules.d/95fcoe/parse-fcoe.sh
++++ b/modules.d/95fcoe/parse-fcoe.sh
+@@ -39,8 +39,7 @@ parse_fcoe_opts() {
+ 
+ parse_fcoe_opts
+ 
+-# currently only nodcb is supported
+-if [ "$fcoe_dcb" != "nodcb" ] ; then
++if [ "$fcoe_dcb" != "nodcb" -a "$fcoe_dcb" != "dcb" ] ; then
+     die "Invalid FCoE DCB option: $fcoe_dcb"
+ fi
+ 
+-- 
+1.6.6
+

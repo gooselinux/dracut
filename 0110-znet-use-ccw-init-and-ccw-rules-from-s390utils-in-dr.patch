@@ -1,0 +1,140 @@
+From 270ba358fa4c1630b41de648d305eb52e3939caa Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dhorak@redhat.com>
+Date: Wed, 5 May 2010 12:51:46 +0200
+Subject: [PATCH 110/112] znet: use ccw-init and ccw rules from s390utils in dracut
+
+---
+ modules.d/95znet/55-ccw.rules |   12 -----
+ modules.d/95znet/ccw_init     |   90 -----------------------------------------
+ modules.d/95znet/install      |    6 +-
+ 3 files changed, 3 insertions(+), 105 deletions(-)
+
+diff --git a/modules.d/95znet/55-ccw.rules b/modules.d/95znet/55-ccw.rules
+index 2c6a805..e69de29 100644
+--- a/modules.d/95znet/55-ccw.rules
++++ b/modules.d/95znet/55-ccw.rules
+@@ -1,12 +0,0 @@
+-ACTION!="add|change", GOTO="ccw_end"
+-SUBSYSTEM!="ccw", GOTO="ccw_end"
+-SYSFS{cutype}=="1731/01", RUN+="ccw_init"
+-SYSFS{cutype}=="1731/05", RUN+="ccw_init"
+-SYSFS{cutype}=="1731/06", RUN+="ccw_init"
+-SYSFS{cutype}=="3088/01", RUN+="ccw_init"
+-SYSFS{cutype}=="3088/08", RUN+="ccw_init"
+-SYSFS{cutype}=="3088/60", RUN+="ccw_init"
+-SYSFS{cutype}=="3088/61", RUN+="ccw_init"
+-SYSFS{cutype}=="3088/1E", RUN+="ccw_init"
+-SYSFS{cutype}=="3088/1F", RUN+="ccw_init"
+-LABEL="ccw_end"
+diff --git a/modules.d/95znet/ccw_init b/modules.d/95znet/ccw_init
+index 83fba8f..e69de29 100755
+--- a/modules.d/95znet/ccw_init
++++ b/modules.d/95znet/ccw_init
+@@ -1,90 +0,0 @@
+-#!/bin/sh
+-
+-[ -z "$DEVPATH" ] && exit 0
+-[ "$SUBSYSTEM" != "ccw" ] && exit 0
+-
+-[ -e /etc/ccw.conf ] || exit 0
+-
+-get_config_by_subchannel()
+-{
+-    CHANNEL="$1"
+-    while read line; do	
+-	IFS=, 
+-	set $line
+-	for i in $@; do
+-	    if [ "$CHANNEL" = "$i" ]; then
+-	 	echo $line
+-	 	return 0
+-	     fi
+-	done
+-	if [ "$CHANNEL" = "$2" ]; then
+-	    echo $line
+-	    return 0
+-	fi
+-    done < /etc/ccw.conf
+-    return 1
+-}
+-
+-# First, determine our channel
+-
+-CHANNEL=${DEVPATH##*/}
+-
+-CONFIG=$(get_config_by_subchannel $CHANNEL)
+-
+-[ $? -ne 0 -o -z "$CONFIG" ] && exit 0
+-
+-set $CONFIG
+-NETTYPE=$1
+-shift
+-SUBCHANNELS="$1"
+-OPTIONS=""
+-CHANNEL1="$1"
+-shift
+-while [ $# -gt 0 ]; do
+-    case $1 in
+-	layer2=*) LAYER2=${1##layer2=};;
+-	*=*) OPTIONS="$OPTIONS $1";;
+-	[0-9]*) SUBCHANNELS="$SUBCHANNELS,$1";;
+-    esac
+-    shift
+-done
+-
+-# SUBCHANNELS is only set on mainframe ccwgroup devices
+-[ -z "$SUBCHANNELS" -o -z "$NETTYPE" ] && exit 0
+-DIR="/sys/bus/ccwgroup/drivers/$NETTYPE"
+-
+-i=0
+-while [ $i -lt 20 ]; do
+-    [ -e $DIR ] && break
+-    sleep 0.1
+-    i=$(($i+1))
+-done
+-
+-SYSDIR="$DIR/$CHANNEL1"
+-
+-if [ ! -e $SYSDIR ]; then
+-    echo "$SUBCHANNELS" > $DIR/group
+-    i=0
+-    while [ $i -lt 20 ]; do
+-	[ -e $SYSDIR ] && break
+-	sleep 0.1
+-	i=$(($i+1))
+-    done
+-fi
+-
+-# check if the interface is already online
+-if [ -e $SYSDIR/online ]; then
+-    read on <$SYSDIR/online
+-    [ "$on" = "1" ] && exit 0
+-fi
+-
+-# first set layer2, other options may depend on it
+-[ -n "$LAYER2" ] && echo $LAYER2 > $SYSDIR/layer2
+-
+-if [ -n "$OPTIONS" ]; then         
+-    for i in $OPTIONS; do
+-	echo "${i##*=}" > "$SYSDIR/${i%%=*}"
+-    done
+-fi
+-
+-[ -e $SYSDIR/online ] && echo 1 > $SYSDIR/online
+diff --git a/modules.d/95znet/install b/modules.d/95znet/install
+index 2d2aaef..bd3603a 100755
+--- a/modules.d/95znet/install
++++ b/modules.d/95znet/install
+@@ -1,6 +1,6 @@
+ #!/bin/bash
+ inst_hook cmdline 30 "$moddir/parse-ccw.sh"
+-inst "$moddir/ccw_init" /lib/udev/ccw_init
++inst /lib/udev/ccw_init
+ #inst_rules 55-ccw.rules || inst_rules "$moddir/55-ccw.rules"
+-inst_rules "$moddir/55-ccw.rules"
+-dracut_install znet_cio_free grep sed seq
++inst_rules 81-ccw.rules
++dracut_install znet_cio_free grep sed seq readlink
+-- 
+1.7.0.1
+

@@ -1,0 +1,49 @@
+From 58659bf2218865bb943519e7616dda11fc2e6ded Mon Sep 17 00:00:00 2001
+From: Philippe Seewer <philippe.seewer@bfh.ch>
+Date: Fri, 5 Mar 2010 11:51:56 +0100
+Subject: [PATCH 50/64] xen: try harder to locate xen-detect
+
+On debian systems xen-detect does not resite somewhere in $PATH,
+but under /usr/lib/xen-default/bin. This patch ensures that this
+is searched as well when locating and installing xen-detect.
+---
+ modules.d/60xen/check   |    6 ++++--
+ modules.d/60xen/install |    4 +++-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/modules.d/60xen/check b/modules.d/60xen/check
+index fbad012..420cdc2 100755
+--- a/modules.d/60xen/check
++++ b/modules.d/60xen/check
+@@ -1,12 +1,14 @@
+ #!/bin/bash
+ 
+ # No Xen-detect? Boo!!
+-which xen-detect >/dev/null 2>&1 || exit 1
++XENDETECT=$(which xen-detect)
++[ -z "$XENDETECT" ] && [ -d "/usr/lib/xen-default" ] && XENDETECT="/usr/lib/xen-default/bin/xen-detect"
++[ -z "$XENDETECT" ] && exit 1
+ 
+ . $dracutfunctions
+ [[ $debug ]] && set -x
+ 
+ # Yes, we are under Xen PV env.
+-xen-detect | egrep -q -v 'PV' || exit 0
++$XENDETECT | egrep -q -v 'PV' || exit 0
+ 
+ exit 1
+diff --git a/modules.d/60xen/install b/modules.d/60xen/install
+index 71a508f..89065b5 100755
+--- a/modules.d/60xen/install
++++ b/modules.d/60xen/install
+@@ -1,4 +1,6 @@
+ #!/bin/bash
+-inst xen-detect 
++XENDETECT=$(which xen-detect)
++[ -z "$XENDETECT" ] && [ -d "/usr/lib/xen-default" ] && XENDETECT="/usr/lib/xen-default/bin/xen-detect"
++inst $XENDETECT /sbin/xen-detect
+ inst_hook pre-udev 40 "$moddir/xen-pre-udev.sh"
+ 
+-- 
+1.6.6
+

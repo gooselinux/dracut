@@ -1,0 +1,21 @@
+From 5cae1fe179faea815e5adcca71645367829aee01 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 9 Jul 2010 11:19:32 +0200
+Subject: [PATCH 172/197] plymouth: depend on crypt, if cryptsetup exists
+
+---
+ modules.d/50plymouth/check |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/50plymouth/check b/modules.d/50plymouth/check
+index 838e7e2..ceb26a7 100755
+--- a/modules.d/50plymouth/check
++++ b/modules.d/50plymouth/check
+@@ -1,3 +1,3 @@
+ #!/bin/bash
+-[[ $1 = -d ]] && echo crypt
++[[ $1 = -d ]] && which cryptsetup &>/dev/null && echo crypt
+ [[ -x /sbin/plymouthd && -x /bin/plymouth && -x /usr/sbin/plymouth-set-default-theme ]]
+-- 
+1.7.0.1
+

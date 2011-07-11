@@ -1,0 +1,25 @@
+From bab749e23eb9c6256d613c9cbc5a736c8b1f6394 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Tue, 2 Feb 2010 15:21:51 +0100
+Subject: [PATCH 07/23] init: dashified $[] -> $(())
+
+---
+ modules.d/99base/init |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/99base/init b/modules.d/99base/init
+index ab033a7..3b719c2 100755
+--- a/modules.d/99base/init
++++ b/modules.d/99base/init
+@@ -19,7 +19,7 @@ wait_for_loginit()
+ 	    [ -z "$j" ] && break
+ 	    [ -z "${j##*Running*}" ] || break
+ 	    sleep 0.1
+-	    i=$[$i+1]
++	    i=$(($i+1))
+ 	done	
+ 	[ $i -eq 10 ] && kill %1 >/dev/null 2>&1
+ 
+-- 
+1.6.6
+

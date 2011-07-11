@@ -1,0 +1,31 @@
+From edcd2c5eb7a455e9a606153bdbe2e9a4b8774a9c Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 10 Jun 2010 13:51:40 +0200
+Subject: [PATCH 145/148] lvm: install lvm mirror and snaphot libs
+
+---
+ modules.d/90lvm/install |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/modules.d/90lvm/install b/modules.d/90lvm/install
+index 706c2c2..0813486 100755
+--- a/modules.d/90lvm/install
++++ b/modules.d/90lvm/install
+@@ -16,3 +16,14 @@ inst_rules 10-dm.rules 13-dm-disk.rules 95-dm-notify.rules 11-dm-lvm.rules
+ 
+ inst "$moddir/lvm_scan.sh" /sbin/lvm_scan
+ inst_hook cmdline 30 "$moddir/parse-lvm.sh"
++
++
++if ldd $(which lvm) | grep -q lib64; then
++    LIBDIR="/lib64"
++else
++    LIBDIR="/lib"
++fi
++
++for i in $(ls /{usr,}/$LIBDIR/libdevmapper-event-lvm*.so 2>/dev/null); do
++    dracut_install $i
++done
+-- 
+1.7.0.1
+

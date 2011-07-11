@@ -1,0 +1,22 @@
+From 31216779494e5797a13ec3cb9289fdf8961cc08d Mon Sep 17 00:00:00 2001
+From: Philippe Seewer <philippe.seewer@bfh.ch>
+Date: Fri, 26 Feb 2010 13:21:38 +0100
+Subject: [PATCH 35/64] parse-kernel.sh must have a shebang
+
+---
+ modules.d/90kernel-modules/parse-kernel.sh |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/modules.d/90kernel-modules/parse-kernel.sh b/modules.d/90kernel-modules/parse-kernel.sh
+index 59d7870..6278dac 100755
+--- a/modules.d/90kernel-modules/parse-kernel.sh
++++ b/modules.d/90kernel-modules/parse-kernel.sh
+@@ -1,3 +1,5 @@
++#!/bin/sh
++
+ for p in $(getargs rdloaddriver=); do 
+ 	modprobe $p
+ done
+-- 
+1.6.6
+

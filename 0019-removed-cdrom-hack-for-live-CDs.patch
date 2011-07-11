@@ -1,0 +1,50 @@
+From 1cf0b1750be8fc65939f746793219cdd40f72c13 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Mon, 15 Feb 2010 09:55:20 +0100
+Subject: [PATCH 19/23] removed cdrom hack for live CDs
+
+The hack does not work reliable for CDROMs with the firmware bug.
+We have really to fix cdrom_id.
+---
+ modules.d/90dmsquash-live/cdrom-hack.sh          |    6 ------
+ modules.d/90dmsquash-live/install                |    1 -
+ modules.d/90dmsquash-live/parse-dmsquash-live.sh |    2 --
+ 3 files changed, 0 insertions(+), 9 deletions(-)
+ delete mode 100755 modules.d/90dmsquash-live/cdrom-hack.sh
+
+diff --git a/modules.d/90dmsquash-live/cdrom-hack.sh b/modules.d/90dmsquash-live/cdrom-hack.sh
+deleted file mode 100755
+index ad1a220..0000000
+--- a/modules.d/90dmsquash-live/cdrom-hack.sh
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#!/bin/sh
+-
+-[ -e /dev/sr0 ] && {
+-	blkid /dev/sr0;
+-	blkid /dev/sr0;
+-} 2>/dev/null
+diff --git a/modules.d/90dmsquash-live/install b/modules.d/90dmsquash-live/install
+index 7600158..ad1d29c 100755
+--- a/modules.d/90dmsquash-live/install
++++ b/modules.d/90dmsquash-live/install
+@@ -21,4 +21,3 @@ inst_hook pre-udev 30 "$moddir/dmsquash-liveiso-genrules.sh"
+ inst "$moddir/dmsquash-live-root" "/sbin/dmsquash-live-root"
+ # should probably just be generally included
+ inst_rules 60-cdrom_id.rules
+-inst "$moddir/cdrom-hack.sh" /sbin/cdrom-hack.sh
+diff --git a/modules.d/90dmsquash-live/parse-dmsquash-live.sh b/modules.d/90dmsquash-live/parse-dmsquash-live.sh
+index 81181f5..24b854e 100755
+--- a/modules.d/90dmsquash-live/parse-dmsquash-live.sh
++++ b/modules.d/90dmsquash-live/parse-dmsquash-live.sh
+@@ -39,7 +39,5 @@ case "$liveroot" in
+ esac
+ info "root was $root, liveroot is now $liveroot"
+ 
+-[ $rootok = "1" ] && initqueue --settled /sbin/cdrom-hack.sh
+-
+ # make sure that init doesn't complain
+ [ -z "$root" ] && root="live"
+-- 
+1.6.6
+

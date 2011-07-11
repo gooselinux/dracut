@@ -1,0 +1,32 @@
+From d8231fa5c29301f422d7bbede0d8fd5de0d9e7e5 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 27 Jan 2010 15:52:08 +0100
+Subject: [PATCH 02/23] mdraid: prefer /etc/mdadm.conf over /etc/mdadm/mdadm.conf
+
+see https://bugzilla.redhat.com/show_bug.cgi?id=557339
+https://bugzilla.redhat.com/show_bug.cgi?id=559073
+---
+ modules.d/90mdraid/install |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/modules.d/90mdraid/install b/modules.d/90mdraid/install
+index 059edfb..6045aaf 100755
+--- a/modules.d/90mdraid/install
++++ b/modules.d/90mdraid/install
+@@ -22,8 +22,11 @@ if ! mdadm -Q -e imsm /dev/null &> /dev/null; then
+ fi
+ 
+ if [[ $hostonly ]] || [[ $mdadmconf = "yes" ]]; then 
+-    [ -f /etc/mdadm/mdadm.conf ] && inst /etc/mdadm/mdadm.conf /etc/mdadm.conf
+-    [ -f /etc/mdadm.conf ] && inst /etc/mdadm.conf
++    if [ -f /etc/mdadm.conf ]; then
++        inst /etc/mdadm.conf
++    else
++        [ -f /etc/mdadm/mdadm.conf ] && inst /etc/mdadm/mdadm.conf /etc/mdadm.conf
++    fi
+ fi
+ 
+ if [ -x  /sbin/mdmon ] ; then
+-- 
+1.6.6
+

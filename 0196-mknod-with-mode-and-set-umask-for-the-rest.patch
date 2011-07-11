@@ -1,0 +1,76 @@
+From e0013593112eba6c986a8ed853572806a51f402d Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 23 Jul 2010 11:17:19 +0200
+Subject: [PATCH 196/196] mknod with mode and set umask for the rest
+
+---
+ modules.d/50plymouth/plymouth-pretrigger.sh |   12 +++++++-----
+ modules.d/99base/init                       |   12 +++++++-----
+ 2 files changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/modules.d/50plymouth/plymouth-pretrigger.sh b/modules.d/50plymouth/plymouth-pretrigger.sh
+index 8605c61..34d60df 100755
+--- a/modules.d/50plymouth/plymouth-pretrigger.sh
++++ b/modules.d/50plymouth/plymouth-pretrigger.sh
+@@ -1,17 +1,19 @@
+ #!/bin/sh
+ 
+ if ! getarg rd_NO_PLYMOUTH; then
+-    [ -c /dev/null ] || mknod /dev/null c 1 3
++    [ -c /dev/null ] || mknod -m 0666 /dev/null c 1 3
+     # first trigger graphics subsystem
+     udevadm trigger --attr-match=class=0x030000 >/dev/null 2>&1
+     # first trigger graphics and tty subsystem
+     udevadm trigger --subsystem-match=graphics --subsystem-match=drm --subsystem-match=tty >/dev/null 2>&1
+ 
+     udevadm settle --timeout=30 2>&1 | vinfo
+-    [ -c /dev/zero ] || mknod /dev/zero c 1 5
+-    [ -c /dev/systty ] || mknod /dev/systty c 4 0
+-    [ -c /dev/fb ] || mknod /dev/fb c 29 0
+-    [ -c /dev/hvc0 ] || mknod /dev/hvc0 c 229 0
++    [ -c /dev/zero ] || mknod -m 0666 /dev/zero c 1 5
++    [ -c /dev/tty0 ] || mknod -m 0620 /dev/tty0 c 4 0
++    [ -e /dev/systty ] || ln -s tty0 /dev/systty
++    [ -c /dev/fb0 ] || mknod -m 0660 /dev/fb0 c 29 0
++    [ -e /dev/fb ] || ln -s fb0 /dev/fb
++    [ -c /dev/hvc0 ] || mknod -m 0600 /dev/hvc0 c 229 0
+ 
+     info "Starting plymouth daemon"
+     [ -x /bin/plymouthd ] && /bin/plymouthd --attach-to-session
+diff --git a/modules.d/99base/init b/modules.d/99base/init
+index 45033af..8938dfb 100755
+--- a/modules.d/99base/init
++++ b/modules.d/99base/init
+@@ -62,11 +62,13 @@ export TERM=linux
+ NEWROOT="/sysroot"
+ 
+ trap "emergency_shell Signal caught!" 0
++# set umask
++umask 0007
+ 
+ RDDEBUG=""
+ . /lib/dracut-lib.sh
+ 
+-mknod /dev/null c 1 3
++mknod -m 0666 /dev/null c 1 3
+ 
+ # mount some important things
+ mount -t proc /proc /proc >/dev/null 2>&1
+@@ -78,10 +80,10 @@ if [ ! -c /dev/ptmx ]; then
+         # if it failed fall back to normal tmpfs
+ 	mount -t tmpfs -omode=0755 udev /dev >/dev/null 2>&1 
+ 	# Make some basic devices first, let udev handle the rest
+-	mknod /dev/null c 1 3
+-	mknod /dev/ptmx c 5 2
+-	mknod /dev/console c 5 1
+-	mknod /dev/kmsg c 1 11
++	mknod -m 0666 /dev/null c 1 3
++	mknod -m 0666 /dev/ptmx c 5 2
++	mknod -m 0600 /dev/console c 5 1
++	mknod -m 0660 /dev/kmsg c 1 11
+     fi
+ fi
+ 
+-- 
+1.7.0.1
+

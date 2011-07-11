@@ -1,0 +1,50 @@
+From a3afcf2a5a1419cfa06dcdf17fdced9cac4bd78c Mon Sep 17 00:00:00 2001
+From: Andy Lutomirski <luto@mit.edu>
+Date: Wed, 19 May 2010 08:13:12 +0200
+Subject: [PATCH 120/133] 90mdraid dracut-functions: fix md raid hostonly detection
+
+check_block_and_slaves looks at slaves but not parents.
+---
+ dracut-functions         |    3 +++
+ modules.d/90mdraid/check |    4 ++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/dracut-functions b/dracut-functions
+index fdcfb7e..7181d3f 100755
+--- a/dracut-functions
++++ b/dracut-functions
+@@ -97,6 +97,9 @@ check_block_and_slaves() {
+     [[ -b /dev/block/$2 ]] || return 1 # Not a block device? So sorry.
+     "$1" $2 && return
+     check_vol_slaves "$@" && return 0
++    if [[ -f "/sys/dev/block/$2/../dev" ]]; then
++	check_block_and_slaves $1 $(cat "/sys/dev/block/$2/../dev") &&  return 0
++    fi
+     [[ -d /sys/dev/block/$2/slaves ]] || return 1
+     for x in /sys/dev/block/$2/slaves/*/dev; do
+         [[ -f $x ]] || continue
+diff --git a/modules.d/90mdraid/check b/modules.d/90mdraid/check
+index be200e1..cad3d0b 100755
+--- a/modules.d/90mdraid/check
++++ b/modules.d/90mdraid/check
+@@ -6,7 +6,7 @@ which mdadm >/dev/null 2>&1 || exit 1
+ . $dracutfunctions
+ [[ $debug ]] && set -x
+ 
+-is_mdraid() { get_fs_type /dev/block/$1 |egrep -q '(linux|isw)_raid'; }
++is_mdraid() { [[ -d "/sys/dev/block/$1/md" ]]; }
+ 
+ [[ $1 = '-h' ]] && {
+     rootdev=$(find_root_block_device)
+@@ -16,7 +16,7 @@ is_mdraid() { get_fs_type /dev/block/$1 |egrep -q '(linux|isw)_raid'; }
+ 	check_block_and_slaves is_mdraid "$rootdev" || exit 1
+     else
+ 	# root is not on a block device, use the shotgun approach
+-	blkid | grep -q linux_raid || exit 1
++	blkid | egrep -q '(linux|isw)_raid' || exit 1
+     fi
+ }
+ 
+-- 
+1.7.0.1
+

@@ -1,0 +1,38 @@
+From fdc421dbacc92e2a5286df203b2d29b6e870552a Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 5 Mar 2010 11:14:28 +0100
+Subject: [PATCH 48/64] dracut: move ldconfig after include
+
+---
+ dracut |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/dracut b/dracut
+index 91098c4..b16e205 100755
+--- a/dracut
++++ b/dracut
+@@ -258,10 +258,6 @@ if [[ -d $initdir/lib/modules/$kernel ]]; then
+     fi
+ fi
+ 
+-# make sure that library links are correct and up to date
+-cp -ar /etc/ld.so.conf* "$initdir"/etc
+-ldconfig -r "$initdir" || [[ $(id -u) != "0" ]] && dinfo "ldconfig might need uid=0 (root) for chroot()"
+-
+ if [[ $include_src && $include_target ]]; then
+     mkdir -p "$initdir$include_target"
+     cp -a -t "$initdir$include_target" "$include_src"/*
+@@ -272,6 +268,10 @@ for item in $install_items; do
+ done
+ unset item
+ 
++# make sure that library links are correct and up to date
++cp -ar /etc/ld.so.conf* "$initdir"/etc
++ldconfig -r "$initdir" || [[ $(id -u) != "0" ]] && dinfo "ldconfig might need uid=0 (root) for chroot()"
++
+ [[ $beverbose = yes ]] && (du -c "$initdir" | sort -n)
+ 
+ # strip binaries 
+-- 
+1.6.6
+

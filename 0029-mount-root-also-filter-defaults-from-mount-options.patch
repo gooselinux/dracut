@@ -1,0 +1,33 @@
+From 0ec519f8a485f94d0fe7e9d2c458d1a24b9a65ff Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 18 Feb 2010 18:05:51 +0100
+Subject: [PATCH 29/64] mount-root: also filter "defaults" from mount options
+
+---
+ modules.d/95rootfs-block/mount-root.sh |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/95rootfs-block/mount-root.sh b/modules.d/95rootfs-block/mount-root.sh
+index 0ac156d..c6b24da 100755
+--- a/modules.d/95rootfs-block/mount-root.sh
++++ b/modules.d/95rootfs-block/mount-root.sh
+@@ -13,6 +13,7 @@ filter_rootopts() {
+     while [ $# -gt 0 ]; do
+         case $1 in
+             rw|ro);;
++	    defaults);;
+             *)
+                 v="$v,${1}";;
+         esac
+@@ -48,7 +49,7 @@ if [ -n "$root" -a -z "${root%%block:*}" ]; then
+ 
+ 	rootopts=$(filter_rootopts $rootopts)
+ 
+-	if [ -n "$rootopts" -a "$rootopts" != "defaults" ]; then
++	if [ -n "$rootopts" ]; then
+             umount $NEWROOT
+             info "Remounting ${root#block:} with -o $rootopts,$rflags"
+             mount -t "$rootfs" -o "$rflags","$rootopts" \
+-- 
+1.6.6
+

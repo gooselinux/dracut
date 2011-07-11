@@ -1,0 +1,26 @@
+From 94d21487079659a7adbeac68c3907f14912aa077 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 12 Feb 2010 12:19:33 +0100
+Subject: [PATCH 18/23] dracut.conf: added add_dracutmodules
+
+---
+ dracut.conf |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/dracut.conf b/dracut.conf
+index 24dbbef..a39925a 100644
+--- a/dracut.conf
++++ b/dracut.conf
+@@ -6,6 +6,9 @@
+ # Dracut modules to omit
+ #omit_dracutmodules=""
+ 
++# Dracut modules to add to the default
++#add_dracutmodules=""
++
+ # additional kernel modules to the default
+ #add_drivers=""
+ 
+-- 
+1.6.6
+

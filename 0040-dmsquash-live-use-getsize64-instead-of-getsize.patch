@@ -1,0 +1,34 @@
+From aab70adc0b4053db1b792df4ec5294a8e7f24cc5 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 4 Mar 2010 13:56:58 +0100
+Subject: [PATCH 40/64] dmsquash-live: use --getsize64 instead of --getsize
+
+---
+ modules.d/90dmsquash-live/dmsquash-live-root |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/modules.d/90dmsquash-live/dmsquash-live-root b/modules.d/90dmsquash-live/dmsquash-live-root
+index f40e048..e2e3ef8 100755
+--- a/modules.d/90dmsquash-live/dmsquash-live-root
++++ b/modules.d/90dmsquash-live/dmsquash-live-root
+@@ -96,7 +96,7 @@ do_live_overlay() {
+     fi
+ 
+     # set up the snapshot
+-    echo 0 `blockdev --getsize $BASE_LOOPDEV` snapshot $BASE_LOOPDEV $OVERLAY_LOOPDEV p 8 | dmsetup create $readonly_overlay live-rw
++    echo 0 `blockdev --getsize64 $BASE_LOOPDEV` snapshot $BASE_LOOPDEV $OVERLAY_LOOPDEV p 8 | dmsetup create $readonly_overlay live-rw
+ }
+ 
+ # live cd helper function
+@@ -169,7 +169,7 @@ fi
+ if [ -b "$OSMIN_LOOPDEV" ]; then
+     # set up the devicemapper snapshot device, which will merge
+     # the normal live fs image, and the delta, into a minimzied fs image
+-    echo "0 $( blockdev --getsize $BASE_LOOPDEV ) snapshot $BASE_LOOPDEV $OSMIN_LOOPDEV p 8" | dmsetup create --readonly live-osimg-min
++    echo "0 $( blockdev --getsize64 $BASE_LOOPDEV ) snapshot $BASE_LOOPDEV $OSMIN_LOOPDEV p 8" | dmsetup create --readonly live-osimg-min
+ fi
+ 
+ ln -s /dev/mapper/live-rw /dev/root
+-- 
+1.6.6
+

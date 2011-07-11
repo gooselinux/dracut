@@ -1,0 +1,112 @@
+From d87c2708ecf3647232f1b7e4caa6f13a4f3ecdc0 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Mon, 3 May 2010 11:35:10 +0200
+Subject: [PATCH 109/112] dracut.conf: use "+=" as default for config variables
+
+---
+ dracut        |    6 ++++--
+ dracut.conf   |   10 +++++-----
+ dracut.conf.5 |   14 +++++++-------
+ 3 files changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/dracut b/dracut
+index 0ae07f2..cd52499 100755
+--- a/dracut
++++ b/dracut
+@@ -138,12 +138,14 @@ fi
+ # source our config file
+ [[ -f $conffile ]] && . "$conffile"
+ 
++# these optins add to the stuff in the config file
++[[ $add_dracutmodules_l ]] && add_dracutmodules+=" $add_dracutmodules_l"
++[[ $add_drivers_l ]] && add_drivers+=" $add_drivers_l"
++
+ # these options override the stuff in the config file
+ [[ $dracutmodules_l ]] && dracutmodules=$dracutmodules_l
+ [[ $omit_dracutmodules_l ]] && omit_dracutmodules=$omit_dracutmodules_l
+-[[ $add_dracutmodules_l ]] && add_dracutmodules="$add_dracutmodules $add_dracutmodules_l"
+ [[ $drivers_l ]] && drivers=$drivers_l
+-[[ $add_drivers_l ]] && add_drivers="$add_drivers $add_drivers_l"
+ [[ $filesystems_l ]] && filesystems=$filesystems_l
+ [[ $drivers_dir_l ]] && drivers_dir=$drivers_dir_l
+ [[ $fw_dir_l ]] && fw_dir=$fw_dir_l
+diff --git a/dracut.conf b/dracut.conf
+index a39925a..c921a00 100644
+--- a/dracut.conf
++++ b/dracut.conf
+@@ -1,19 +1,19 @@
+ # Sample dracut config file
+ 
+ # Specific list of dracut modules to use
+-#dracutmodules=""
++#dracutmodules+=""
+ 
+ # Dracut modules to omit
+-#omit_dracutmodules=""
++#omit_dracutmodules+=""
+ 
+ # Dracut modules to add to the default
+-#add_dracutmodules=""
++#add_dracutmodules+=""
+ 
+ # additional kernel modules to the default
+-#add_drivers=""
++#add_drivers+=""
+ 
+ # list of kernel filesystem modules to be included in the generic initramfs
+-#filesystems=""
++#filesystems+=""
+ 
+ # build initrd only to boot current hardware
+ #hostonly="yes"
+diff --git a/dracut.conf.5 b/dracut.conf.5
+index a781dfb..a62c912 100644
+--- a/dracut.conf.5
++++ b/dracut.conf.5
+@@ -12,28 +12,28 @@ Command line parameter will overwrite any values set here.
+ 
+ .SH OPTIONS
+ .TP
+-.BR dracutmodules= \%"[LIST]"
++.BR dracutmodules+= \%"[LIST]"
+ Specify a space-separated list of dracut modules to
+ call when building the initramfs. Modules are located
+ in /usr/share/dracut/modules.d.
+ .TP
+-.BR omit_dracutmodules= \%"[LIST]"
++.BR omit_dracutmodules+= \%"[LIST]"
+ Omit a space-separated list of dracut modules.
+ .TP
+-.BR add_dracutmodules= \%"[LIST]"
++.BR add_dracutmodules+= \%"[LIST]"
+ Add a space-separated list of dracut modules.
+ .TP
+-.BR drivers= \%"[LIST]"
++.BR drivers+= \%"[LIST]"
+ Specify a space-separated list of kernel modules to
+ exclusively include in the initramfs.
+ The kernel modules have to be specified without the ".ko" suffix.
+ .TP
+-.BR add_drivers= \%"[LIST]"
++.BR add_drivers+= \%"[LIST]"
+ Specify a space-separated list of kernel 
+ modules to add to the initramfs.
+ The kernel modules have to be specified without the ".ko" suffix.
+ .TP
+-.BR filesystems= \%"[LIST]"
++.BR filesystems+= \%"[LIST]"
+ Specify a space-separated list of kernel filesystem
+ modules to exclusively include in the generic
+ initramfs.
+@@ -41,7 +41,7 @@ initramfs.
+ .BR drivers_dir= \%"<dir>"
+ Specify the directory, where to look for kernel modules
+ .TP
+-.BR fw_dir= \%"<dir>[:<dir>\ ...]"
++.BR fw_dir+= \%":<dir>[:<dir>\ ...]"
+ Specify additional directories, where to look for firmwares, separated by :
+ .TP
+ .BR do_strip= \%"yes|no"
+-- 
+1.7.0.1
+

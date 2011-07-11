@@ -1,0 +1,153 @@
+From 013986a8ad4bafe4b15772f1c4fdff697e013f17 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Mon, 12 Jul 2010 14:31:21 +0200
+Subject: [PATCH 174/197] crypt: assemble 70-luks.rules dynamically
+
+---
+ modules.d/50plymouth/cryptroot-ask.sh |   46 ++++++++------------------------
+ modules.d/90crypt/crypt-cleanup.sh    |    2 +
+ modules.d/90crypt/cryptroot-ask.sh    |   29 ++++----------------
+ modules.d/90crypt/parse-crypt.sh      |   17 ++++++++++++
+ 4 files changed, 37 insertions(+), 57 deletions(-)
+
+diff --git a/modules.d/50plymouth/cryptroot-ask.sh b/modules.d/50plymouth/cryptroot-ask.sh
+index 3897b33..b1a7465 100755
+--- a/modules.d/50plymouth/cryptroot-ask.sh
++++ b/modules.d/50plymouth/cryptroot-ask.sh
+@@ -48,42 +48,20 @@ if [ -f /etc/crypttab ] && ! getargs rd_NO_CRYPTTAB; then
+     unset name dev rest
+ fi
+ 
+-LUKS=$(getargs rd_LUKS_UUID=)
+-ask=1
+-num=0
+-if [ -n "$LUKS" ]; then
+-    ask=0
+-    luuid=${2##luks-}
+-    for luks in $LUKS; do
+-        num=$(($num+1))
+-	luks=${luks##luks-}
+-	if [ "${luuid##$luks}" != "$luuid" ] || [ "$luksname" = "$luks" ]; then
+-	    ask=1
+-	fi
+-        [ $num -ge 2 -a "$ask" = "1" ] && break
+-    done
++prompt="Password [$device ($luksname)]:" 
++if [ ${#luksname} -gt 8 ]; then
++    sluksname=${sluksname##luks-}
++    sluksname=${luksname%%${luksname##????????}}
++    prompt="Password for $device ($sluksname...)"
+ fi
+-unset LUKS luks luuid
+ 
+-if [ $ask -gt 0 ]; then
+-    info "luksOpen $device $luksname"
+-    if [ $num -eq 1 ]; then
+-         prompt="Password for filesystem"
+-    else
+-         prompt="Password [$device ($luksname)]:" 
+-         if [ ${#luksname} -gt 8 ]; then
+-	     sluksname=${sluksname##luks-}
+-             sluksname=${luksname%%${luksname##????????}}
+-             prompt="Password for $device ($sluksname...)"
+-         fi
+-    fi
+-    # flock against other interactive activities
+-    { flock -s 9; 
+-	/bin/plymouth ask-for-password \
+-	    --prompt "$prompt" \
+-	    --command="/sbin/cryptsetup luksOpen -T1 $device $luksname"
+-    } 9>/.console.lock
+-fi
++# flock against other interactive activities
++{ flock -s 9; 
++    /bin/plymouth ask-for-password \
++	--prompt "$prompt" \
++	--command="/sbin/cryptsetup luksOpen -T1 $device $luksname"
++} 9>/.console.lock
++
+ unset ask device luksname
+ 
+ # mark device as asked
+diff --git a/modules.d/90crypt/crypt-cleanup.sh b/modules.d/90crypt/crypt-cleanup.sh
+index 3959a07..a9c976a 100755
+--- a/modules.d/90crypt/crypt-cleanup.sh
++++ b/modules.d/90crypt/crypt-cleanup.sh
+@@ -1,5 +1,7 @@
+ #!/bin/sh
+ # close everything which is not busy
++rm -f /etc/udev/rules.d/70-luks.rules >/dev/null 2>&1
++
+ for i in /dev/mapper/luks-*; do
+     cryptsetup luksClose $i >/dev/null 2>&1
+ done
+diff --git a/modules.d/90crypt/cryptroot-ask.sh b/modules.d/90crypt/cryptroot-ask.sh
+index 430155a..a6a9af1 100755
+--- a/modules.d/90crypt/cryptroot-ask.sh
++++ b/modules.d/90crypt/cryptroot-ask.sh
+@@ -51,29 +51,12 @@ if [ -f /etc/crypttab ] && ! getargs rd_NO_CRYPTTAB; then
+     unset name dev rest
+ fi
+ 
+-LUKS=$(getargs rd_LUKS_UUID=)
+-ask=1
+-if [ -n "$LUKS" ]; then
+-    ask=0
+-    luuid=${2##luks-}
+-    for luks in $LUKS; do
+-	luks=${luks##luks-}
+-	if [ "${luuid##$luks}" != "$luuid" ] || [ "$luksname" = "$luks" ]; then
+-	    ask=1
+-	    break
+-	fi
+-    done
+-fi
+-unset LUKS luks luuid
+-
+-if [ $ask -gt 0 ]; then
+-    info "luksOpen $device $luksname"
+-    # flock against other interactive activities
+-    { flock -s 9; 
+-	echo -n "$device ($luksname) is password protected"
+-	cryptsetup luksOpen -T1 $1 $luksname 
+-    } 9>/.console.lock
+-fi
++info "luksOpen $device $luksname"
++# flock against other interactive activities
++{ flock -s 9; 
++    echo -n "$device ($luksname) is password protected"
++    cryptsetup luksOpen -T1 $1 $luksname 
++} 9>/.console.lock
+ 
+ # mark device as asked
+ >> /tmp/cryptroot-asked-$2
+diff --git a/modules.d/90crypt/parse-crypt.sh b/modules.d/90crypt/parse-crypt.sh
+index 5c2a94a..1e8a659 100755
+--- a/modules.d/90crypt/parse-crypt.sh
++++ b/modules.d/90crypt/parse-crypt.sh
+@@ -2,5 +2,22 @@
+ if getarg rd_NO_LUKS; then
+     info "rd_NO_LUKS: removing cryptoluks activation"
+     rm -f /etc/udev/rules.d/70-luks.rules
++else
++    {
++	echo 'SUBSYSTEM!="block", GOTO="luks_end"'
++	echo 'ACTION!="add|change", GOTO="luks_end"'
++    } > /etc/udev/rules.d/70-luks.rules
++    LUKS=$(getargs rd_LUKS_UUID=)
++    if [ -n "$LUKS" ]; then
++	for luksid in $LUKS; do 
++	printf 'ENV{ID_FS_TYPE}=="crypto_LUKS", ENV{ID_FS_UUID}=="*%s*", RUN+="/sbin/initqueue --unique --onetime --name cryptroot-ask-%%k /sbin/cryptroot-ask $env{DEVNAME} luks-$env{ID_FS_UUID}"\n' $luksid \
++	    >> /etc/udev/rules.d/70-luks.rules	
++	done
++    else
++	echo 'ENV{ID_FS_TYPE}=="crypto_LUKS", RUN+="/sbin/initqueue --unique --onetime --name cryptroot-ask-%k /sbin/cryptroot-ask $env{DEVNAME} luks-$env{ID_FS_UUID}"' \
++	    >> /etc/udev/rules.d/70-luks.rules	
++    fi
++    echo LABEL="luks_end" >> /etc/udev/rules.d/70-luks.rules
++
+ fi
+ 
+-- 
+1.7.0.1
+

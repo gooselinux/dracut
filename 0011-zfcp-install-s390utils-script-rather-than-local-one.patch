@@ -1,0 +1,25 @@
+From b456ab777d414f47dd970c64759d62b3cbf092f2 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 4 Feb 2010 16:03:35 +0100
+Subject: [PATCH 11/23] zfcp: install s390utils script rather than local one
+
+---
+ modules.d/95zfcp/install |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/95zfcp/install b/modules.d/95zfcp/install
+index 8d0e6e7..574cc5c 100755
+--- a/modules.d/95zfcp/install
++++ b/modules.d/95zfcp/install
+@@ -2,7 +2,7 @@
+ inst_hook cmdline 30 "$moddir/parse-zfcp.sh"
+ dracut_install tr
+ 
+-inst "$moddir/zfcpconf.sh" /sbin/zfcpconf.sh
++inst /sbin/zfcpconf.sh
+ inst_rules 56-zfcp.rules
+ 
+ if [[ $hostonly ]]; then
+-- 
+1.6.6
+

@@ -1,0 +1,51 @@
+From 43f253397720ec0954fe88ecb9725e3beda53875 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Thu, 25 Feb 2010 10:22:42 -0500
+Subject: [PATCH 31/64] Use multipath if it's installed and being used for the root fs.
+
+Don't conditionalize on hostonly; use multipath if it's installed and in
+use.
+---
+ modules.d/90multipath/check   |   14 +++++---------
+ modules.d/90multipath/install |    2 +-
+ 2 files changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/modules.d/90multipath/check b/modules.d/90multipath/check
+index 2723b3d..cae2052 100755
+--- a/modules.d/90multipath/check
++++ b/modules.d/90multipath/check
+@@ -14,14 +14,10 @@ is_mpath() {
+     return 1
+ }
+ 
+-# If we're in hostonly mode, do mpath if we appear to be using it for /
+-if [[ $1 = -h ]]; then
+-    rootdev=$(find_root_block_device)
+-    if [[ $rootdev ]]; then
+-        check_block_and_slaves is_mpath "$rootdev" && exit 0
+-    fi
+-    exit 1
++# Do mpath if we appear to be using it for /
++rootdev=$(find_root_block_device)
++if [[ $rootdev ]]; then
++    check_block_and_slaves is_mpath "$rootdev" && exit 0
+ fi
+ 
+-# the user installed it, they get it...
+-exit 0
++exit 1
+diff --git a/modules.d/90multipath/install b/modules.d/90multipath/install
+index 432f4f8..8b4d693 100755
+--- a/modules.d/90multipath/install
++++ b/modules.d/90multipath/install
+@@ -1,6 +1,6 @@
+ #!/bin/bash
+ 
+-if [[ $hostonly ]]; then
++if [ -f /etc/multipath.conf ]; then
+     inst /etc/multipath.conf
+ fi
+ 
+-- 
+1.6.6
+

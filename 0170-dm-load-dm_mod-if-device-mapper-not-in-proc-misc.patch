@@ -1,0 +1,19 @@
+From 40d69001ac53d7083662648e99a9162492ec67ad Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 8 Jul 2010 16:18:09 +0200
+Subject: [PATCH 170/173] dm: load dm_mod if device-mapper not in /proc/misc
+
+---
+ modules.d/90dm/dm-pre-udev.sh |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/90dm/dm-pre-udev.sh b/modules.d/90dm/dm-pre-udev.sh
+index 8fdaeaf..dfa4541 100755
+--- a/modules.d/90dm/dm-pre-udev.sh
++++ b/modules.d/90dm/dm-pre-udev.sh
+@@ -1 +1 @@
+-modprobe dm_mod 
++strstr "$(cat /proc/misc)" device-mapper || modprobe dm_mod 
+-- 
+1.7.0.1
+

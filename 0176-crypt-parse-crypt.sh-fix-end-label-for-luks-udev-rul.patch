@@ -1,0 +1,25 @@
+From ecee64bffa3d9a23ba7c87eb746278610aa82152 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Mon, 12 Jul 2010 14:43:11 +0200
+Subject: [PATCH 176/197] crypt/parse-crypt.sh: fix end label for luks udev rules
+
+---
+ modules.d/90crypt/parse-crypt.sh |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/90crypt/parse-crypt.sh b/modules.d/90crypt/parse-crypt.sh
+index 1e8a659..775617f 100755
+--- a/modules.d/90crypt/parse-crypt.sh
++++ b/modules.d/90crypt/parse-crypt.sh
+@@ -17,7 +17,7 @@ else
+ 	echo 'ENV{ID_FS_TYPE}=="crypto_LUKS", RUN+="/sbin/initqueue --unique --onetime --name cryptroot-ask-%k /sbin/cryptroot-ask $env{DEVNAME} luks-$env{ID_FS_UUID}"' \
+ 	    >> /etc/udev/rules.d/70-luks.rules	
+     fi
+-    echo LABEL="luks_end" >> /etc/udev/rules.d/70-luks.rules
++    echo 'LABEL="luks_end"' >> /etc/udev/rules.d/70-luks.rules
+ 
+ fi
+ 
+-- 
+1.7.0.1
+

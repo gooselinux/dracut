@@ -1,0 +1,22 @@
+From 72011255e0ea400f0003cea42e59769b5a86198d Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 4 Mar 2010 18:02:27 +0100
+Subject: [PATCH 45/64] rpmversion/install: add shebang
+
+---
+ modules.d/10rpmversion/install |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/modules.d/10rpmversion/install b/modules.d/10rpmversion/install
+index afb06c8..2349674 100755
+--- a/modules.d/10rpmversion/install
++++ b/modules.d/10rpmversion/install
+@@ -1,3 +1,5 @@
++#!/bin/bash
++
+ if [ -e "$moddir/dracut-version" ]; then
+     dracut_rpm_version=$(cat "$moddir/dracut-version")
+     inst "$moddir/dracut-version" /$dracut_rpm_version
+-- 
+1.6.6
+

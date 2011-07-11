@@ -1,0 +1,38 @@
+From 9ab1426534a945fb4958a819f1ad505423792aef Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 19 May 2010 09:33:20 +0200
+Subject: [PATCH 122/133] 40network/dhclient-script: be more verbose
+
+---
+ modules.d/40network/dhclient-script |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/40network/dhclient-script b/modules.d/40network/dhclient-script
+index ac7d5e1..3efbc2d 100755
+--- a/modules.d/40network/dhclient-script
++++ b/modules.d/40network/dhclient-script
+@@ -60,10 +60,12 @@ netif=$interface
+ 
+ case $reason in
+     PREINIT)
++	echo "dhcp: PREINIT $netif up"
+ 	ip link set $netif up
+ 	wait_for_if_up $netif
+ 	;;
+     BOUND)
++	echo "dhcp: BOND setting $netif"
+ 	if ! arping -q -D -c 2 -I $netif $new_ip_address ; then
+ 	    warn "Duplicate address detected for $new_ip_address while doing dhcp. retrying"
+ 	    exit 1
+@@ -76,7 +78,7 @@ case $reason in
+ 	echo online > /sys/class/net/$netif/uevent
+ 	/sbin/initqueue --onetime --name netroot-$netif  /sbin/netroot $netif 
+ 	;;
+-    *) ;;
++    *) echo "dhcp: $reason";;
+ esac
+ 
+ exit 0
+-- 
+1.7.0.1
+

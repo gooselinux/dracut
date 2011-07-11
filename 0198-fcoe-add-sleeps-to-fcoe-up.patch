@@ -1,0 +1,29 @@
+From 3272ed884f8ae1682b36675f3b6abd75277ab0b7 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 23 Jul 2010 12:20:32 +0200
+Subject: [PATCH 198/198] fcoe: add sleeps to fcoe-up
+
+---
+ modules.d/95fcoe/fcoe-up |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/modules.d/95fcoe/fcoe-up b/modules.d/95fcoe/fcoe-up
+index 9954e0a..7a89e3e 100755
+--- a/modules.d/95fcoe/fcoe-up
++++ b/modules.d/95fcoe/fcoe-up
+@@ -26,8 +26,12 @@ if [ "$dcb" = "dcb" ]; then
+     # are to kill it and start a new lldpad to take over. Data is transfered
+     # between the 2 using a shm segment
+     lldpad -d
++    # stupid tools, need sleep
++    sleep 1
+     dcbtool sc "$netif" dcb on
++    sleep 1
+     dcbtool sc "$netif" app:fcoe e:1 a:1 w:1
++    sleep 1
+     fipvlan "$netif" -c -s
+ else
+     echo -n "$netif" > /sys/module/fcoe/parameters/create
+-- 
+1.7.0.1
+

@@ -1,0 +1,25 @@
+From a39ea24f10bb3ecb6fa49f51c80de69107618159 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 10 Feb 2010 18:54:31 +0100
+Subject: [PATCH 15/23] nfs: suppress error message about missing passwd
+
+---
+ modules.d/95nfs/install |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/95nfs/install b/modules.d/95nfs/install
+index ea2d432..004099c 100755
+--- a/modules.d/95nfs/install
++++ b/modules.d/95nfs/install
+@@ -36,7 +36,7 @@ mkdir -p "$initdir/var/lib/nfs/statd/sm"
+ 
+ # Rather than copy the passwd file in, just set a user for rpcbind
+ # We'll save the state and restart the daemon from the root anyway
+-egrep '^root:' "$initdir/etc/passwd" || echo  'root:x:0:0::/:/bin/sh' >> "$initdir/etc/passwd"
++egrep '^root:' "$initdir/etc/passwd" 2>/dev/null || echo  'root:x:0:0::/:/bin/sh' >> "$initdir/etc/passwd"
+ egrep '^nobody:' /etc/passwd >> "$initdir/etc/passwd"
+ egrep '^nfsnobody:' /etc/passwd >> "$initdir/etc/passwd"
+ egrep '^rpc:' /etc/passwd >> "$initdir/etc/passwd"
+-- 
+1.6.6
+

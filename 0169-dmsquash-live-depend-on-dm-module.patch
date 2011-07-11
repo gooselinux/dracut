@@ -1,0 +1,28 @@
+From 06f91665dfc379b051ad4eb18bdddd7bfb9c23e9 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 8 Jul 2010 16:14:55 +0200
+Subject: [PATCH 169/173] dmsquash-live: depend on dm module
+
+---
+ modules.d/90dmsquash-live/check |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/90dmsquash-live/check b/modules.d/90dmsquash-live/check
+index 54e5007..ae7306e 100755
+--- a/modules.d/90dmsquash-live/check
++++ b/modules.d/90dmsquash-live/check
+@@ -2,7 +2,10 @@
+ 
+ # if dmsetup is not installed, then we cannot support fedora/red hat 
+ # style live images
+-which dmsetup >/dev/null 2>&1 || exit 1
++if [ "$1" = "-d" ]; then
++    echo dm
++    exit 0
++fi
+ 
+ # a live host-only image doesn't really make a lot of sense
+ if [ "$1" = "-h" ] ; then
+-- 
+1.7.0.1
+

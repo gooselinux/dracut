@@ -1,0 +1,26 @@
+From 70aaa95d52eb7efdd3fec175839356663cc01d83 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 5 Mar 2010 11:07:10 +0100
+Subject: [PATCH 47/64] dracut: do a full ldconfig in the initramfs
+
+---
+ dracut |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/dracut b/dracut
+index 7e2b954..91098c4 100755
+--- a/dracut
++++ b/dracut
+@@ -259,7 +259,8 @@ if [[ -d $initdir/lib/modules/$kernel ]]; then
+ fi
+ 
+ # make sure that library links are correct and up to date
+-ldconfig -n -r "$initdir" /lib* /usr/lib*
++cp -ar /etc/ld.so.conf* "$initdir"/etc
++ldconfig -r "$initdir" || [[ $(id -u) != "0" ]] && dinfo "ldconfig might need uid=0 (root) for chroot()"
+ 
+ if [[ $include_src && $include_target ]]; then
+     mkdir -p "$initdir$include_target"
+-- 
+1.6.6
+

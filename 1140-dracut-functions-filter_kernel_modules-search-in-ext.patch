@@ -1,0 +1,27 @@
+From 63de73ece61ab41a528779b482c289038a75a4dc Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Tue, 10 Aug 2010 15:54:03 +0200
+Subject: [PATCH 140/140] dracut-functions: filter_kernel_modules() search in extra dirs
+
+search also in "extra" and "weak-updates" for kernel modules
+https://bugzilla.redhat.com/show_bug.cgi?id=622641
+---
+ dracut-functions |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/dracut-functions b/dracut-functions
+index e627a50..a9b763e 100755
+--- a/dracut-functions
++++ b/dracut-functions
+@@ -463,7 +463,7 @@ for_each_kmod_dep() {
+ # This function returns the full filenames of modules that match $1
+ filter_kernel_modules () (
+     if ! [[ $hostonly ]]; then
+-	filtercmd='find "$srcmods/kernel/drivers" -name "*.ko" -o -name "*.ko.gz"'
++        filtercmd='find "$srcmods/kernel/drivers" "$srcmods/updates" "$srcmods/extra" "$srcmods/weak-updates" -name "*.ko" -o -name "*.ko.gz" 2>/dev/null'
+     else
+ 	filtercmd='cut -d " " -f 1 </proc/modules|xargs modinfo -F filename -k $kernel'
+     fi
+-- 
+1.7.2
+

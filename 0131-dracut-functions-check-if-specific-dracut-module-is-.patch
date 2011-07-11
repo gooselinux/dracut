@@ -1,0 +1,40 @@
+From 70503db41662f4d0005a5fc06f8d25d03588157e Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 26 May 2010 17:42:57 +0200
+Subject: [PATCH 131/133] dracut-functions: check if specific dracut module is missing
+
+---
+ dracut-functions |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/dracut-functions b/dracut-functions
+index 7181d3f..fce5abb 100755
+--- a/dracut-functions
++++ b/dracut-functions
+@@ -393,6 +393,8 @@ should_source_module() {
+ }
+ 
+ check_modules() {
++    local modcheck;
++    local mod;
+     for moddir in "$dracutbasedir/modules.d"/[0-9][0-9]*; do
+ 	local mod=${moddir##*/}; mod=${mod#[0-9][0-9]}
+ 	# If we are already scheduled to be loaded, no need to check again.
+@@ -407,6 +409,14 @@ check_modules() {
+         fi
+ 	mods_to_load+=" $mod "
+     done
++
++    modcheck=$add_dracutmodules
++    [[ $dracutmodules != all ]] && modcheck="$m $dracutmodules"
++    for mod in $modcheck; do
++        strstr "$mods_to_load" "$mod" && continue
++        strstr "$omit_dracutmodules" "$mod" && continue
++        dwarning "Dracut module \"$mod\" cannot be found."
++    done
+ }
+ 
+ # Install a single kernel module along with any firmware it may require.
+-- 
+1.7.0.1
+

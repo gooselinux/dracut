@@ -1,0 +1,26 @@
+From 2974f382f8e2fe201b94c49f9329c82a341ef070 Mon Sep 17 00:00:00 2001
+From: Victor Lowther <victor.lowther@gmail.com>
+Date: Wed, 2 Jun 2010 07:07:55 -0500
+Subject: [PATCH 137/197] Have cryptroot-ask load dm_crypt if needed.
+
+---
+ modules.d/90crypt/cryptroot-ask.sh |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/modules.d/90crypt/cryptroot-ask.sh b/modules.d/90crypt/cryptroot-ask.sh
+index 2f39667..430155a 100755
+--- a/modules.d/90crypt/cryptroot-ask.sh
++++ b/modules.d/90crypt/cryptroot-ask.sh
+@@ -9,6 +9,9 @@
+ # we already asked for this device
+ [ -f /tmp/cryptroot-asked-$2 ] && exit 0
+ 
++# load dm_crypt if it is not already loaded
++[ -d /sys/module/dm_crypt ] || modprobe dm_crypt
++
+ . /lib/dracut-lib.sh
+ 
+ # default luksname - luks-UUID
+-- 
+1.7.0.1
+

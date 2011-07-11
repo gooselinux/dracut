@@ -1,0 +1,44 @@
+From 7c0aa2a2ead47301ae6660d35f069853b30ec473 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 19 May 2010 09:33:58 +0200
+Subject: [PATCH 123/133] 40network/ifup: be more verbose
+
+---
+ modules.d/40network/ifup |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/modules.d/40network/ifup b/modules.d/40network/ifup
+index e2237ef..6ef1010 100755
+--- a/modules.d/40network/ifup
++++ b/modules.d/40network/ifup
+@@ -12,7 +12,9 @@ do_dhcp() {
+     # /sbin/dhclient-script will mark the netif up and generate the online
+     # event for nfsroot
+     # XXX add -V vendor class and option parsing per kernel
+-    dhclient "$@" -1 -q -cf /etc/dhclient.conf -pf /tmp/dhclient.$netif.pid -lf /tmp/dhclient.$netif.lease $netif
++    echo "Starting dhcp for interface $netif"
++    dhclient "$@" -1 -q -cf /etc/dhclient.conf -pf /tmp/dhclient.$netif.pid -lf /tmp/dhclient.$netif.lease $netif \
++    || echo "dhcp failed"
+ }
+ 
+ load_ipv6() {
+@@ -78,14 +80,10 @@ do_static() {
+ 
+ PATH=$PATH:/sbin:/usr/sbin
+ 
++export PS4="ifup.$1.$$ + "
++exec >>/dev/initlog.pipe 2>>/dev/initlog.pipe
+ . /lib/dracut-lib.sh
+ 
+-if getarg rdnetdebug ; then
+-    exec >/tmp/ifup.$1.$$.out
+-    exec 2>>/tmp/ifup.$1.$$.out
+-    set -x
+-fi
+-
+ # Huh? No $1?
+ [ -z "$1" ] && exit 1
+ 
+-- 
+1.7.0.1
+

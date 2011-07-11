@@ -1,0 +1,25 @@
+From 5f927f201d5ed6f650d18b7143e148c8c12a00a6 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 11 Jun 2010 13:16:36 +0200
+Subject: [PATCH 148/148] network: strip pxelinux hardware type field from BOOTIF
+
+---
+ modules.d/40network/net-genrules.sh |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/modules.d/40network/net-genrules.sh b/modules.d/40network/net-genrules.sh
+index 10d6ecd..7a26909 100755
+--- a/modules.d/40network/net-genrules.sh
++++ b/modules.d/40network/net-genrules.sh
+@@ -6,6 +6,8 @@ fix_bootif() {
+     local IFS='-'
+     macaddr=$(for i in ${macaddr} ; do echo -n $i:; done)
+     macaddr=${macaddr%:}
++    # strip hardware type field from pxelinux
++    [ -n "${macaddr%??:??:??:??:??:??}" ] && macaddr=${macaddr#??:}
+     echo $macaddr
+ }
+ 
+-- 
+1.7.0.1
+

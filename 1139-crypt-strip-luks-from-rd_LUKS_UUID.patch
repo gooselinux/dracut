@@ -1,0 +1,32 @@
+From 92674f2fc89f270a5221e7e8cf99926513d5e703 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 29 Jul 2010 17:02:26 +0200
+Subject: [PATCH 139/139] crypt: strip "luks-" from rd_LUKS_UUID
+
+---
+ modules.d/90crypt/parse-crypt.sh |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/modules.d/90crypt/parse-crypt.sh b/modules.d/90crypt/parse-crypt.sh
+index 04d9ecb..853fe07 100755
+--- a/modules.d/90crypt/parse-crypt.sh
++++ b/modules.d/90crypt/parse-crypt.sh
+@@ -11,10 +11,11 @@ else
+     if [ -n "$LUKS" ]; then
+ 	echo '. /lib/dracut-lib.sh' > /emergency/crypt.sh
+ 	for luksid in $LUKS; do 
+-	printf 'ENV{ID_FS_TYPE}=="crypto_LUKS", ENV{ID_FS_UUID}=="*%s*", RUN+="/sbin/initqueue --unique --onetime --name cryptroot-ask-%%k /sbin/cryptroot-ask $env{DEVNAME} luks-$env{ID_FS_UUID}"\n' $luksid \
+-	    >> /etc/udev/rules.d/70-luks.rules	
+-	printf '[ -e /dev/disk/by-uuid/*%s* ] || exit 1 \n'  $luksid >> /initqueue-finished/crypt.sh
+-	printf '[ -e /dev/disk/by-uuid/*%s* ] || warn "crypto LUKS UUID "%s" not found" \n' $luksid $luksid >> /emergency/00-crypt.sh
++            luksid=${luksid##luks-}
++	    printf 'ENV{ID_FS_TYPE}=="crypto_LUKS", ENV{ID_FS_UUID}=="%s*", RUN+="/sbin/initqueue --unique --onetime --name cryptroot-ask-%%k /sbin/cryptroot-ask $env{DEVNAME} luks-$env{ID_FS_UUID}"\n' $luksid \
++	        >> /etc/udev/rules.d/70-luks.rules	
++	    printf '[ -e /dev/disk/by-uuid/*%s* ] || exit 1 \n'  $luksid >> /initqueue-finished/crypt.sh
++	    printf '[ -e /dev/disk/by-uuid/*%s* ] || warn "crypto LUKS UUID "%s" not found" \n' $luksid $luksid >> /emergency/00-crypt.sh
+ 	done
+     else
+ 	echo 'ENV{ID_FS_TYPE}=="crypto_LUKS", RUN+="/sbin/initqueue --unique --onetime --name cryptroot-ask-%k /sbin/cryptroot-ask $env{DEVNAME} luks-$env{ID_FS_UUID}"' \
+-- 
+1.7.2
+

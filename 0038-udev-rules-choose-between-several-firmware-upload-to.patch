@@ -1,0 +1,37 @@
+From b686095f99eb3a7ae15d73302c0937dbfeed505a Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 4 Mar 2010 13:50:34 +0100
+Subject: [PATCH 38/64] udev-rules: choose between several firmware upload tools
+
+debian: firmware.agent hotplug.functions
+old fedora: firmware.sh
+new udev upstream: firmware
+---
+ modules.d/95udev-rules/install |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/95udev-rules/install b/modules.d/95udev-rules/install
+index b903a41..cd6171a 100755
+--- a/modules.d/95udev-rules/install
++++ b/modules.d/95udev-rules/install
+@@ -15,7 +15,6 @@ inst_rules "$moddir/01-ignore.rules"
+ 
+ # for firmware loading
+ inst_rules 50-firmware.rules
+-dracut_install /lib/udev/firmware.sh
+ dracut_install cat uname
+ 
+ if [ ! -x /lib/udev/vol_id ]; then
+@@ -32,6 +31,9 @@ cdrom_id \
+ create_floppy_devices \
+ edd_id \
+ firmware.sh \
++firmware \
++firmware.agent \
++hotplug.functions \
+ fw_unit_symlinks.sh \
+ hid2hci \
+ path_id \
+-- 
+1.6.6
+

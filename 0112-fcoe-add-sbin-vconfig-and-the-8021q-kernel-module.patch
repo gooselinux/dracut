@@ -1,0 +1,34 @@
+From 13289be13382de462d04d30f8992eda87e5be307 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 6 May 2010 16:23:46 +0200
+Subject: [PATCH 112/112] fcoe: add /sbin/vconfig and the 8021q kernel module
+
+---
+ modules.d/95fcoe/install       |    2 ++
+ modules.d/95fcoe/installkernel |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/95fcoe/install b/modules.d/95fcoe/install
+index 69f6bf5..db08a34 100755
+--- a/modules.d/95fcoe/install
++++ b/modules.d/95fcoe/install
+@@ -4,6 +4,8 @@ dracut_install ip
+ inst dcbtool 
+ inst fipvlan
+ inst lldpad
++inst vconfig
++
+ mkdir -p "$initdir/var/lib/lldpad"
+ 
+ inst "$moddir/fcoe-up" "/sbin/fcoe-up"
+diff --git a/modules.d/95fcoe/installkernel b/modules.d/95fcoe/installkernel
+index f3409b3..5ce7ca8 100755
+--- a/modules.d/95fcoe/installkernel
++++ b/modules.d/95fcoe/installkernel
+@@ -1,2 +1,2 @@
+ #!/bin/bash
+-instmods fcoe
++instmods fcoe 8021q
+-- 
+1.7.0.1
+

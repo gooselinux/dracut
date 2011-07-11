@@ -1,0 +1,26 @@
+From 01b8cdffcac552c49fcf5a6b15ad592085bf0f4b Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Date: Thu, 4 Mar 2010 14:00:29 +0100
+Subject: [PATCH 41/64] Fix boot with user suspend and no resume= kernel argument
+
+Mandriva bug https://qa.mandriva.com/show_bug.cgi?id=57924. Check
+if dracut got resume= argument before calling /usr/sbin/resume
+---
+ modules.d/95uswsusp/resume-uswsusp.sh |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/95uswsusp/resume-uswsusp.sh b/modules.d/95uswsusp/resume-uswsusp.sh
+index 9b18567..ce0e3d2 100755
+--- a/modules.d/95uswsusp/resume-uswsusp.sh
++++ b/modules.d/95uswsusp/resume-uswsusp.sh
+@@ -8,4 +8,6 @@ case "$splash" in
+     ;;
+ esac
+ 
+-/usr/sbin/resume $a_splash "$resume"
++if [ -n "$resume" ]; then
++    /usr/sbin/resume $a_splash "$resume"
++fi
+-- 
+1.6.6
+

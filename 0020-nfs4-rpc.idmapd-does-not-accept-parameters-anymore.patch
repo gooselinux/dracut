@@ -1,0 +1,78 @@
+From 21a74b32b2fe398aef0b6c3f87cb7a58c903c28a Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Mon, 15 Feb 2010 10:43:51 +0100
+Subject: [PATCH 20/23] nfs4: rpc.idmapd does not accept parameters anymore
+
+modify /etc/idmapd.conf instead
+---
+ modules.d/95nfs/install          |    4 +++-
+ modules.d/95nfs/nfsroot          |    8 +-------
+ modules.d/95nfs/parse-nfsroot.sh |   11 +++++++++++
+ 3 files changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/modules.d/95nfs/install b/modules.d/95nfs/install
+index 004099c..43976f9 100755
+--- a/modules.d/95nfs/install
++++ b/modules.d/95nfs/install
+@@ -7,6 +7,8 @@ dracut_install rpc.statd mount.nfs mount.nfs4 umount
+ dracut_install /etc/services 
+ dracut_install /etc/nsswitch.conf /etc/rpc /etc/protocols
+ dracut_install rpc.idmapd /etc/idmapd.conf
++dracut_install sed
++
+ if ldd $(which rpc.idmapd) |grep -q lib64; then
+     LIBDIR="/lib64"
+ else
+@@ -28,7 +30,7 @@ nsslibs=${nsslibs##|}
+ dracut_install $(for i in $(ls {/usr,}$LIBDIR/libnss*.so 2>/dev/null); do echo $i;done | egrep "$nsslibs")
+ 
+ inst_hook cmdline 90 "$moddir/parse-nfsroot.sh"
+-inst_hook pre-pivot 70 "$moddir/nfsroot-cleanup.sh"
++inst_hook pre-pivot 99 "$moddir/nfsroot-cleanup.sh"
+ inst "$moddir/nfsroot" "/sbin/nfsroot"
+ mkdir -p "$initdir/var/lib/nfs/rpc_pipefs"
+ mkdir -p "$initdir/var/lib/rpcbind"
+diff --git a/modules.d/95nfs/nfsroot b/modules.d/95nfs/nfsroot
+index 39d5b0c..fb7d5f4 100755
+--- a/modules.d/95nfs/nfsroot
++++ b/modules.d/95nfs/nfsroot
+@@ -93,13 +93,7 @@ if [ "$nfs" = "nfs4" ]; then
+     # rpc.lockd isn't needed
+     [ -z "$(pidof rpc.statd)" ] && rpc.statd
+ 
+-    # XXX really needed? Do we need non-root users before we start it in
+-    # XXX the real root image?
+-    if nfsdomain=$(getarg rd_NFS_DOMAIN); then
+-        [ -z "$(pidof rpc.idmapd)" ] && rpc.idmapd -d $nfsdomain
+-    else
+-        [ -z "$(pidof rpc.idmapd)" ] && rpc.idmapd
+-    fi
++    [ -z "$(pidof rpc.idmapd)" ] && rpc.idmapd
+ 
+     # XXX Should we loop here?
+     mount -t nfs4 -o$options${nfslock+,$nfslock} \
+diff --git a/modules.d/95nfs/parse-nfsroot.sh b/modules.d/95nfs/parse-nfsroot.sh
+index bcf3465..910dd26 100755
+--- a/modules.d/95nfs/parse-nfsroot.sh
++++ b/modules.d/95nfs/parse-nfsroot.sh
+@@ -69,6 +69,17 @@ case "${netroot%%:*}" in
+ esac
+ 
+ # Check required arguments
++
++if nfsdomain=$(getarg rd_NFS_DOMAIN); then
++    if [ -f /etc/idmapd.conf ]; then
++	sed -i -e \
++	    "s/^[[:space:]#]*Domain[[:space:]]*=.*/Domain = $nfsdomain/g" \
++	    /etc/idmapd.conf
++    fi
++    # and even again after the sed, in case it was not yet specified
++    echo "Domain = $nfsdomain" >> /etc/idmapd.conf
++fi
++
+ nfsroot_to_var $netroot
+ [ "$path" = "error" ] && die "Argument nfsroot must contain a valid path!"
+ 
+-- 
+1.6.6
+

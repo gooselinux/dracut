@@ -1,0 +1,40 @@
+From 4819ae98ac06c95eac3d20439dedc31e216706dc Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 17 Feb 2010 17:02:04 +0100
+Subject: [PATCH 23/23] fix lib64 check
+
+on ppc we can have libc in /lib64/power6/
+---
+ modules.d/01fips/install       |    2 +-
+ modules.d/95udev-rules/install |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/modules.d/01fips/install b/modules.d/01fips/install
+index 426156f..53f54de 100755
+--- a/modules.d/01fips/install
++++ b/modules.d/01fips/install
+@@ -4,7 +4,7 @@ inst_hook pre-trigger 01 "$moddir/fips.sh"
+ dracut_install sha512hmac rmmod insmod mount uname umount
+ 
+ libdir="lib"
+-if ldd $(find_binary sha512hmac) |grep -q /lib64/libc; then
++if ldd $(find_binary sha512hmac) |grep -q /lib64/; then
+     libdir="lib64"
+ fi
+ 
+diff --git a/modules.d/95udev-rules/install b/modules.d/95udev-rules/install
+index 2d378de..b903a41 100755
+--- a/modules.d/95udev-rules/install
++++ b/modules.d/95udev-rules/install
+@@ -45,7 +45,7 @@ pcmcia-check-broken-cis \
+ done
+ 
+ 
+-if ldd $(find_binary udevd) |grep -q /lib64/libc; then
++if ldd $(find_binary udevd) |grep -q /lib64/; then
+     dracut_install /lib64/libnss_files*
+ else
+     dracut_install /lib/libnss_files*
+-- 
+1.6.6
+

@@ -1,0 +1,51 @@
+From b63fd4d905fcf42f163298bbd03c3b70aad24388 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Date: Thu, 4 Mar 2010 14:02:43 +0100
+Subject: [PATCH 42/64] Pass init argument(s) to real init
+
+Common wisdom to enter single user on Linux is to edit command
+line and add "single". This was not possible because switch_root
+was always called with empty init arguments. Collect them from
+command line and pass to real init when switching root.
+
+Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+---
+ modules.d/99base/init |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/99base/init b/modules.d/99base/init
+index 3b719c2..ab7aafe 100755
+--- a/modules.d/99base/init
++++ b/modules.d/99base/init
+@@ -259,10 +259,10 @@ done
+ 
+ initargs=""
+ 
++read CLINE </proc/cmdline
+ if getarg init= >/dev/null ; then
+     ignoreargs="console BOOT_IMAGE"
+     # only pass arguments after init= to the init
+-    read CLINE </proc/cmdline
+     CLINE=${CLINE#*init=}
+     set $CLINE
+     shift
+@@ -273,6 +273,16 @@ if getarg init= >/dev/null ; then
+         initargs="$initargs $x"
+     done
+     unset CLINE
++else
++    set $CLINE
++    shift
++    for x in "$@"; do
++        case "$x" in
++            [0-9]|s|S|single|emergency|auto )
++                initargs="$initargs $x"
++            ;;
++        esac
++    done
+ fi
+ 
+ # Debug: Copy state
+-- 
+1.6.6
+

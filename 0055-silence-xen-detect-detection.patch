@@ -1,0 +1,26 @@
+From df54ef139067b2c96be05a7306a1e06f238485f1 Mon Sep 17 00:00:00 2001
+From: Luca Berra <bluca@comedia.it>
+Date: Sun, 7 Mar 2010 13:52:08 +0100
+Subject: [PATCH 55/64] silence xen-detect detection
+
+Signed-off-by: Luca Berra <bluca@comedia.it>
+---
+ modules.d/60xen/check |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/modules.d/60xen/check b/modules.d/60xen/check
+index 420cdc2..f155582 100755
+--- a/modules.d/60xen/check
++++ b/modules.d/60xen/check
+@@ -1,7 +1,7 @@
+ #!/bin/bash
+ 
+ # No Xen-detect? Boo!!
+-XENDETECT=$(which xen-detect)
++XENDETECT=$(which xen-detect 2>/dev/null)
+ [ -z "$XENDETECT" ] && [ -d "/usr/lib/xen-default" ] && XENDETECT="/usr/lib/xen-default/bin/xen-detect"
+ [ -z "$XENDETECT" ] && exit 1
+ 
+-- 
+1.6.6
+

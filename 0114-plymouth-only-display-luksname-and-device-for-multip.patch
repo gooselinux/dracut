@@ -1,0 +1,64 @@
+From d7a272a95ea6e89641db9a3a30402901f88428a7 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Thu, 6 May 2010 17:31:46 +0200
+Subject: [PATCH 114/114] plymouth: only display luksname and device for multiple luks
+
+https://bugzilla.redhat.com/show_bug.cgi?id=561092
+---
+ modules.d/50plymouth/cryptroot-ask.sh |   18 +++++++++++++++---
+ 1 files changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/modules.d/50plymouth/cryptroot-ask.sh b/modules.d/50plymouth/cryptroot-ask.sh
+index b9f2461..7dee9a1 100755
+--- a/modules.d/50plymouth/cryptroot-ask.sh
++++ b/modules.d/50plymouth/cryptroot-ask.sh
+@@ -50,25 +50,37 @@ fi
+ 
+ LUKS=$(getargs rd_LUKS_UUID=)
+ ask=1
++num=0
+ if [ -n "$LUKS" ]; then
+     ask=0
+     luuid=${2##luks-}
+     for luks in $LUKS; do
++        num=$(($num+1))
+ 	luks=${luks##luks-}
+ 	if [ "${luuid##$luks}" != "$luuid" ] || [ "$luksname" = "$luks" ]; then
+ 	    ask=1
+-	    break
+ 	fi
++        [ $num -ge 2 -a "$ask" = "1" ] && break
+     done
+ fi
+ unset LUKS luks luuid
+ 
+ if [ $ask -gt 0 ]; then
+     info "luksOpen $device $luksname"
++    if [ $num -eq 1 ]; then
++         prompt="Password:"
++    else
++         prompt="Password [$device ($luksname)]:" 
++         if [ ${#luksname} -gt 8 ]; then
++	     sluksname=${sluksname##luks-}
++             sluksname=${luksname%%${luksname##????????}}
++             prompt="Password [$device ($sluksname...)]:"
++         fi
++    fi
+     # flock against other interactive activities
+     { flock -s 9; 
+ 	/bin/plymouth ask-for-password \
+-	    --prompt "$device ($luksname) is password protected" \
++	    --prompt "$prompt" \
+ 	    --command="/sbin/cryptsetup luksOpen -T1 $device $luksname"
+     } 9>/.console.lock
+ fi
+@@ -80,4 +92,4 @@ unset ask device luksname
+ udevsettle
+ 
+ exit 0
+-# vim:ts=8:sw=4:sts=4:et
+\ No newline at end of file
++# vim:ts=8:sw=4:sts=4:et
+-- 
+1.7.0.1
+

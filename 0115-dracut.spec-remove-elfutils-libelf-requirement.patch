@@ -1,0 +1,25 @@
+From a8a103e093101e5c478fa57fd1827a4d881aba68 Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Fri, 7 May 2010 10:16:03 +0200
+Subject: [PATCH 115/133] dracut.spec: remove elfutils-libelf requirement
+
+---
+ dracut.spec |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/dracut.spec b/dracut.spec
+index a29098a..7a2816d 100644
+--- a/dracut.spec
++++ b/dracut.spec
+@@ -59,7 +59,7 @@ Requires: fileutils, gzip, tar
+ Requires: lvm2 >= 2.02.33-9, dhclient
+ Requires: filesystem >= 2.1.0, cpio, device-mapper, initscripts >= 8.63-1
+ Requires: coreutils
+-Requires: mdadm, elfutils-libelf 
++Requires: mdadm  
+ Requires(pre): plymouth >= 0.8.0-0.2009.29.09.19.1
+ Requires: plymouth >= 0.8.0-0.2009.29.09.19.1
+ Requires: cryptsetup-luks
+-- 
+1.7.0.1
+

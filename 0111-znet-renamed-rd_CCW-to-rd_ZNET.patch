@@ -1,0 +1,47 @@
+From 3df3a99759a9253113a88fb708c721c282fa7c3c Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 5 May 2010 12:54:04 +0200
+Subject: [PATCH 111/112] znet: renamed rd_CCW to rd_ZNET
+
+but parse old rd_CCW anyway
+---
+ dracut.8                      |   10 +++++-----
+ modules.d/95znet/parse-ccw.sh |    2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/dracut.8 b/dracut.8
+index 31a70fc..ca27728 100644
+--- a/dracut.8
++++ b/dracut.8
+@@ -394,12 +394,12 @@ example: rd_ZFCP=0.0.4000,0x5005076300C213e9,0x5022000000000000
+ .BR rd_NO_ZFCPCONF
+ ignore zfcp.conf included in the initramfs
+ 
+-.SS CCW
++.SS ZNET
+ .TP
+-.BR rd_CCW= "<nettype>,<subchannels>,<options>"
+-rd_CCW can be specified multiple times on the kernel command line. Examples:
+-    rd_CCW=qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portname=foo
+-    rd_CCW=ctc,0.0.0600,0.0.0601,0.0.0602,protocol=bar
++.BR rd_ZNET= "<nettype>,<subchannels>,<options>"
++rd_ZNET can be specified multiple times on the kernel command line. Examples:
++    rd_ZNET=qeth,0.0.0600,0.0.0601,0.0.0602,layer2=1,portname=foo
++    rd_ZNET=ctc,0.0.0600,0.0.0601,0.0.0602,protocol=bar
+ 
+ .SS "Plymouth Boot Splash"
+ .TP
+diff --git a/modules.d/95znet/parse-ccw.sh b/modules.d/95znet/parse-ccw.sh
+index 8e839c3..7960e6a 100755
+--- a/modules.d/95znet/parse-ccw.sh
++++ b/modules.d/95znet/parse-ccw.sh
+@@ -1,5 +1,5 @@
+ #!/bin/sh
+-for ccw_arg in $(getargs 'rd_CCW='); do
++for ccw_arg in $(getargs 'rd_CCW=') $(getargs 'rd_ZNET='); do
+     echo $ccw_arg >> /etc/ccw.conf
+ done
+ 
+-- 
+1.7.0.1
+

@@ -1,0 +1,27 @@
+From e9a9c8bb7e7069afd380dc2974a0847f5b1ee3ef Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 7 Jul 2010 11:20:27 +0200
+Subject: [PATCH 167/198] fcoe: moved fcoeup to initqueue (udev timeouts)
+
+---
+ modules.d/95fcoe/fcoe-genrules.sh |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/modules.d/95fcoe/fcoe-genrules.sh b/modules.d/95fcoe/fcoe-genrules.sh
+index e9d0157..5750bd1 100755
+--- a/modules.d/95fcoe/fcoe-genrules.sh
++++ b/modules.d/95fcoe/fcoe-genrules.sh
+@@ -7,8 +7,8 @@
+ # Write udev rules
+ {
+     if [ -n "$fcoe_mac" ] ; then
+-	printf 'ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="%s", RUN+="/sbin/fcoe-up $env{INTERFACE} %s"\n' "$fcoe_mac" "$fcoe_dcb"
++	printf 'ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="%s", RUN+="/sbin/initqueue --onetime --unique --name fcoe-up-$env{INTERFACE} /sbin/fcoe-up $env{INTERFACE} %s"\n' "$fcoe_mac" "$fcoe_dcb"
+     else
+-	printf 'ACTION=="add", SUBSYSTEM=="net", NAME=="%s", RUN+="/sbin/fcoe-up $env{INTERFACE} %s"\n' "$fcoe_interface" "$fcoe_dcb"
++	printf 'ACTION=="add", SUBSYSTEM=="net", NAME=="%s", RUN+="/sbin/initqueue --onetime --unique --name fcoe-up-$env{INTERFACE} /sbin/fcoe-up $env{INTERFACE} %s"\n' "$fcoe_interface" "$fcoe_dcb"
+     fi
+ } > /etc/udev/rules.d/60-fcoe.rules
+-- 
+1.7.0.1
+

@@ -1,0 +1,25 @@
+From 91d839409322180da37f49f18bd9a7b90219217e Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 19 May 2010 09:36:11 +0200
+Subject: [PATCH 125/133] 95fcoe/fcoe-up: wait_for_if_up
+
+---
+ modules.d/95fcoe/fcoe-up |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/modules.d/95fcoe/fcoe-up b/modules.d/95fcoe/fcoe-up
+index bd6294a..47a7e8d 100755
+--- a/modules.d/95fcoe/fcoe-up
++++ b/modules.d/95fcoe/fcoe-up
+@@ -15,6 +15,8 @@ netif=$1
+ dcb=$2
+ 
+ /sbin/ip link set "$netif" up
++wait_for_if_up "$netif"
++
+ if [ "$dcb" = "dcb" ]; then
+     # Note lldpad will stay running after switchroot, the system initscripts
+     # are to kill it and start a new lldpad to take over. Data is transfered
+-- 
+1.7.0.1
+

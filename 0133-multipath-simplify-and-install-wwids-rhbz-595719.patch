@@ -1,0 +1,101 @@
+From dcdf5c8801a9b11454d28975efd394e62bc600fe Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Wed, 26 May 2010 17:44:07 +0200
+Subject: [PATCH 133/133] multipath: simplify and install wwids (rhbz 595719)
+
+install /etc/multipath/wwids
+
+With the proper 40-multipath.rules and new udev device-mapper mechanism,
+we don't need the multipath scan anymore.
+
+rhbz#595719
+---
+ modules.d/90multipath/9-multipath-scan.rules |    9 ---------
+ modules.d/90multipath/install                |    8 ++------
+ modules.d/90multipath/multipath-scan.sh      |   16 ----------------
+ modules.d/90multipath/multipathd.sh          |    1 +
+ 4 files changed, 3 insertions(+), 31 deletions(-)
+ delete mode 100644 modules.d/90multipath/9-multipath-scan.rules
+ delete mode 100755 modules.d/90multipath/multipath-scan.sh
+
+diff --git a/modules.d/90multipath/9-multipath-scan.rules b/modules.d/90multipath/9-multipath-scan.rules
+deleted file mode 100644
+index 99c2b7c..0000000
+--- a/modules.d/90multipath/9-multipath-scan.rules
++++ /dev/null
+@@ -1,9 +0,0 @@
+-# scan for multipath devices
+-SUBSYSTEM!="block", GOTO="end_mpath_scan"
+-KERNEL!="sd*", GOTO="end_mpath_scan"
+-PROGRAM=="/bin/sh -c 'for i in $sys/$devpath/holders/dm-[0-9]*; do [ -e $$i ] && exit 0; done; exit 1;' ", GOTO="end_mpath_scan"
+-RUN+="/sbin/modprobe dm-multipath"
+-RUN+="/bin/echo 'queuing multipath scan'"
+-RUN+="/sbin/initqueue --settled --onetime --unique --name mpscan /sbin/multipath-scan"
+-RUN+="/bin/sh -c '>/tmp/.multipath-scan-%k;'"
+-LABEL="end_mpath_scan"
+diff --git a/modules.d/90multipath/install b/modules.d/90multipath/install
+index 8b4d693..ed2d698 100755
+--- a/modules.d/90multipath/install
++++ b/modules.d/90multipath/install
+@@ -1,9 +1,5 @@
+ #!/bin/bash
+ 
+-if [ -f /etc/multipath.conf ]; then
+-    inst /etc/multipath.conf
+-fi
+-
+ if ldd $(which multipath) 2>/dev/null |grep -q lib64; then
+     LIBDIR="/lib64"
+ else
+@@ -19,6 +15,8 @@ for f in  \
+     /sbin/xdrgetuid \
+     /sbin/xdrgetprio \
+     /etc/xdrdevices.conf \
++    /etc/multipath.conf \
++    /etc/multipath/wwids \
+     $(ls $LIBDIR/libmultipath* $LIBDIR/multipath/* 2>/dev/null) \
+     	;do
+     [ -e "$f" ] && inst "$f"
+@@ -28,5 +26,3 @@ inst_hook pre-trigger 02 "$moddir/multipathd.sh"
+ inst_hook pre-pivot   02 "$moddir/multipathd-stop.sh"
+ inst_rules 40-multipath.rules
+ 
+-inst "$moddir/multipath-scan.sh" /sbin/multipath-scan
+-inst_rules "$moddir/9-multipath-scan.rules"
+diff --git a/modules.d/90multipath/multipath-scan.sh b/modules.d/90multipath/multipath-scan.sh
+deleted file mode 100755
+index 0e1d3f2..0000000
+--- a/modules.d/90multipath/multipath-scan.sh
++++ /dev/null
+@@ -1,16 +0,0 @@
+-#!/bin/sh
+-
+-# scan for multipaths if udev has settled
+-
+-. /lib/dracut-lib.sh
+-
+-[ -d /etc/multipath ] || mkdir -p /etc/multipath
+-mpdevs=$(
+-    for f in /tmp/.multipath-scan-* ; do
+-        [ -e "$f" ] || continue
+-        echo -n "${f##/tmp/.multipath-scan-} "
+-    done
+-)
+-
+-[ -e /etc/multipath.conf ] || exit 1
+-multipath ${mpdevs}
+diff --git a/modules.d/90multipath/multipathd.sh b/modules.d/90multipath/multipathd.sh
+index 5dd8a4e..851c08e 100755
+--- a/modules.d/90multipath/multipathd.sh
++++ b/modules.d/90multipath/multipathd.sh
+@@ -1,6 +1,7 @@
+ #!/bin/sh
+ 
+ if [ -e /etc/multipath.conf ]; then
++        modprobe dm-multipath
+ 	multipathd
+ fi
+ 
+-- 
+1.7.0.1
+
