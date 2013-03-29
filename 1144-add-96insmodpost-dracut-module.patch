@@ -1,0 +1,75 @@
+From 7cfd77a0f14a9ffef420c19ce85709af31d6f79a Mon Sep 17 00:00:00 2001
+From: Harald Hoyer <harald@redhat.com>
+Date: Mon, 18 Oct 2010 16:07:58 +0200
+Subject: [PATCH 144/151] add 96insmodpost dracut module
+
+due to popular demand, this module loads a custom kernel module, after the
+first udev settle (all basic device drivers loaded)
+---
+ modules.d/96insmodpost/check               |    5 +++++
+ modules.d/96insmodpost/insmodpost.sh       |    8 ++++++++
+ modules.d/96insmodpost/install             |    6 ++++++
+ modules.d/96insmodpost/parse-insmodpost.sh |   11 +++++++++++
+ 4 files changed, 30 insertions(+), 0 deletions(-)
+ create mode 100755 modules.d/96insmodpost/check
+ create mode 100755 modules.d/96insmodpost/insmodpost.sh
+ create mode 100755 modules.d/96insmodpost/install
+ create mode 100755 modules.d/96insmodpost/parse-insmodpost.sh
+
+diff --git a/modules.d/96insmodpost/check b/modules.d/96insmodpost/check
+new file mode 100755
+index 0000000..e0292c8
+--- /dev/null
++++ b/modules.d/96insmodpost/check
+@@ -0,0 +1,5 @@
++#!/bin/bash
++# -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
++# ex: ts=8 sw=4 sts=4 et filetype=sh
++
++exit 0
+diff --git a/modules.d/96insmodpost/insmodpost.sh b/modules.d/96insmodpost/insmodpost.sh
+new file mode 100755
+index 0000000..f3bd780
+--- /dev/null
++++ b/modules.d/96insmodpost/insmodpost.sh
+@@ -0,0 +1,8 @@
++#!/bin/sh
++# -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
++# ex: ts=8 sw=4 sts=4 et filetype=sh
++. /lib/dracut-lib.sh
++
++for p in $(getargs rdinsmodpost=); do 
++    modprobe $p
++done
+diff --git a/modules.d/96insmodpost/install b/modules.d/96insmodpost/install
+new file mode 100755
+index 0000000..4509d1b
+--- /dev/null
++++ b/modules.d/96insmodpost/install
+@@ -0,0 +1,6 @@
++#!/bin/bash
++# -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
++# ex: ts=8 sw=4 sts=4 et filetype=sh
++
++inst_hook cmdline 20 "$moddir/parse-insmodpost.sh"
++inst_simple "$moddir/insmodpost.sh" /sbin/insmodpost.sh
+diff --git a/modules.d/96insmodpost/parse-insmodpost.sh b/modules.d/96insmodpost/parse-insmodpost.sh
+new file mode 100755
+index 0000000..4cfd355
+--- /dev/null
++++ b/modules.d/96insmodpost/parse-insmodpost.sh
+@@ -0,0 +1,11 @@
++#!/bin/sh
++# -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
++# ex: ts=8 sw=4 sts=4 et filetype=sh
++
++for p in $(getargs rdinsmodpost=); do 
++    echo "blacklist $p" >> /etc/modprobe.d/initramfsblacklist.conf
++    _do_insmodpost=1
++done
++
++[ -n "$_do_insmodpost" ] && /sbin/initqueue --settled --unique --onetime /sbin/insmodpost.sh
++unset _do_insmodpost
+-- 
+1.7.3.2
+

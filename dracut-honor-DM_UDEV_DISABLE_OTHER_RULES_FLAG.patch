@@ -1,0 +1,56 @@
+diff -rup dracut-004.orig/modules.d/90dmraid/61-dmraid-imsm.rules dracut-004/modules.d/90dmraid/61-dmraid-imsm.rules
+--- dracut-004.orig/modules.d/90dmraid/61-dmraid-imsm.rules	2010-01-15 14:07:54.000000000 +0100
++++ dracut-004/modules.d/90dmraid/61-dmraid-imsm.rules	2010-11-08 14:59:51.786016999 +0100
+@@ -13,6 +13,8 @@ ENV{ID_FS_TYPE}=="isw_raid_member", ENV{
+ 
+ ENV{rd_NO_DM}=="?*", GOTO="dm_end"
+ 
++ENV{DM_UDEV_DISABLE_OTHER_RULES_FLAG}=="1", GOTO="dm_end"
++
+ PROGRAM=="/bin/sh -c 'for i in $sys/$devpath/holders/dm-[0-9]*; do [ -e $$i ] && exit 0; done; exit 1;' ", \
+     GOTO="dm_end"
+ 
+diff -rup dracut-004.orig/modules.d/95udev-rules/59-persistent-storage.rules dracut-004/modules.d/95udev-rules/59-persistent-storage.rules
+--- dracut-004.orig/modules.d/95udev-rules/59-persistent-storage.rules	2010-11-08 14:56:17.395017001 +0100
++++ dracut-004/modules.d/95udev-rules/59-persistent-storage.rules	2010-11-08 15:02:36.891017011 +0100
+@@ -29,6 +29,7 @@ KERNEL!="dm-[0-9]*", GOTO="ps_end"
+ ACTION=="add", GOTO="ps_end"
+ IMPORT{program}="/sbin/dmsetup info -c --nameprefixes --unquoted --rows --noheadings -o name,uuid,suspended,readonly,major,minor,open,tables_loaded,names_using_dev -j%M -m%m"
+ ENV{DM_NAME}!="?*", GOTO="ps_end"
++ENV{DM_UDEV_DISABLE_OTHER_RULES_FLAG}=="1", GOTO="ps_end"
+ ENV{DM_UUID}=="CRYPT-TEMP-?*", GOTO="ps_end"
+ ENV{DM_UUID}!="?*", ENV{DM_NAME}=="temporary-cryptsetup-?*", GOTO="ps_end"
+ IMPORT{program}="/sbin/blkid -o udev -p $tempnode"
+diff -rup dracut-004.orig/modules.d/95udev-rules/59-persistent-storage-volid.rules dracut-004/modules.d/95udev-rules/59-persistent-storage-volid.rules
+--- dracut-004.orig/modules.d/95udev-rules/59-persistent-storage-volid.rules	2010-01-15 14:07:54.000000000 +0100
++++ dracut-004/modules.d/95udev-rules/59-persistent-storage-volid.rules	2010-11-08 15:01:43.915017003 +0100
+@@ -1,7 +1,7 @@
+ SUBSYSTEM!="block", GOTO="psv_end"
+ ACTION!="add|change", GOTO="psv_end"
+-ACTION=="change", KERNEL=="dm-[0-9]*", IMPORT{program}="vol_id --export $tempnode"
++ACTION=="change", KERNEL=="dm-[0-9]*", ENV{DM_UDEV_DISABLE_OTHER_RULES_FLAG}!="1", IMPORT{program}="vol_id --export $tempnode"
+ KERNEL=="cciss[0-9]*", IMPORT{program}="vol_id --export $tempnode"
+ KERNEL=="nbd[0-9]*", IMPORT{program}="vol_id --export $tempnode"
+ KERNEL=="md[0-9]*|md_d[0-9]*|md/*", IMPORT{program}="vol_id --export $tempnode"
+-LABEL="psv_end"
+\ No newline at end of file
++LABEL="psv_end"
+diff -rup dracut-004.orig/modules.d/95udev-rules/61-persistent-storage.rules dracut-004/modules.d/95udev-rules/61-persistent-storage.rules
+--- dracut-004.orig/modules.d/95udev-rules/61-persistent-storage.rules	2010-01-15 14:07:54.000000000 +0100
++++ dracut-004/modules.d/95udev-rules/61-persistent-storage.rules	2010-11-08 15:03:20.972017031 +0100
+@@ -1,7 +1,7 @@
+ SUBSYSTEM!="block", GOTO="pss_end"
+ ACTION!="add|change", GOTO="pss_end"
+ 
+-ACTION=="change", KERNEL=="dm-[0-9]*", GOTO="do_pss"
++ACTION=="change", KERNEL=="dm-[0-9]*", ENV{DM_UDEV_DISABLE_OTHER_RULES_FLAG}!="1", GOTO="do_pss"
+ KERNEL=="cciss[0-9]*", GOTO="do_pss"
+ KERNEL=="nbd[0-9]*", GOTO="do_pss"
+ KERNEL=="md[0-9]*|md_d[0-9]*|md/*", GOTO="do_pss"
+@@ -17,4 +17,4 @@ ENV{DEVTYPE}=="partition", ENV{ID_PATH}=
+ # by-label/by-uuid links (filesystem metadata)
+ ENV{ID_FS_USAGE}=="filesystem|other|crypto", ENV{ID_FS_UUID_ENC}=="?*", SYMLINK+="disk/by-uuid/$env{ID_FS_UUID_ENC}"
+ ENV{ID_FS_USAGE}=="filesystem|other", ENV{ID_FS_LABEL_ENC}=="?*", SYMLINK+="disk/by-label/$env{ID_FS_LABEL_ENC}"
+-LABEL="pss_end"
+\ No newline at end of file
++LABEL="pss_end"

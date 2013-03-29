@@ -20,7 +20,7 @@
 
 Name: dracut
 Version: 004
-Release: 32%{?rdist}
+Release: 33.2%{?rdist}
 Summary: Initramfs generator using udev
 Group: System Environment/Base		
 License: GPLv2+	
@@ -171,6 +171,10 @@ Patch1137: 1137-init-do-not-umask.patch
 Patch1138: 1138-selinux-fixed-error-handling-for-load-policy.patch
 Patch1139: 1139-crypt-strip-luks-from-rd_LUKS_UUID.patch
 Patch1140: 1140-dracut-functions-filter_kernel_modules-search-in-ext.patch
+
+Patch1144: 1144-add-96insmodpost-dracut-module.patch
+
+Patch1200: dracut-honor-DM_UDEV_DISABLE_OTHER_RULES_FLAG.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -419,12 +423,15 @@ This package contains tools to assemble the local initrd and host configuration.
 %patch1138 -p1
 %patch1139 -p1
 %patch1140 -p1
+%patch1144 -p1
+%patch1200 -p1
 
 chmod 0755 modules.d/*/check
 # make rpmlint happy
 chmod 0755 modules.d/*/install
 chmod 0755 modules.d/*/installkernel
 chmod 0755 modules.d/45ifcfg/write-ifcfg.sh
+chmod 0755 modules.d/96insmodpost/insmodpost.sh
 
 %build
 make WITH_SWITCH_ROOT=0%{?with_switch_root}
@@ -491,6 +498,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/dracut/modules.d/95terminfo
 %{_datadir}/dracut/modules.d/95udev-rules
 %{_datadir}/dracut/modules.d/95uswsusp
+%{_datadir}/dracut/modules.d/96insmodpost
 %{_datadir}/dracut/modules.d/98syslog
 %{_datadir}/dracut/modules.d/99base
 %attr(0644,root,root) %ghost %config(missingok,noreplace) %{_localstatedir}/log/dracut.log
@@ -530,6 +538,18 @@ rm -rf $RPM_BUILD_ROOT
 %dir /var/lib/dracut/overlay
  
 %changelog
+* Fri Jan 07 2011 Harald Hoyer <harald@redhat.com> 004-33.2
+- chmod 0755 modules.d/96insmodpost/insmodpost.sh
+Resolves: rhbz#661298
+
+* Wed Dec 08 2010 Harald Hoyer <harald@redhat.com> 004-33.1
+- add 96insmodpost dracut module
+Resolves: rhbz#661298
+
+* Tue Nov 09 2010 Harald Hoyer <harald@redhat.com> 004-33
+- honor DM_UDEV_DISABLE_OTHER_RULES_FLAG
+Resolves: rhbz#651402
+
 * Thu Aug 19 2010 Harald Hoyer <harald@redhat.com> 004-32
 - do not call dracut with hostonly from within mkinitrd
 Resolves: rhbz#624826
